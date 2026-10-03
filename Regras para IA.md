@@ -28,6 +28,9 @@ Estas decisões foram extraídas do pedido atual:
 - Implementar história, cadastro de fotos, extração de metadados, mapa com pins de coração, popup de memória, perfil e galeria.
 - Usar sidebar na navegação e aproveitar o frontend existente.
 - Manter a documentação deste projeto em [[00 - Projeto 1Ano]].
+- NÃO ESCREVA CODIGO DESNECESSÁRIO.
+- Os programas devem ser legiveis e o mais curto possivel, sem utilizar codigo desnecessário.
+- Escreva no mesmo estilo de codigo da referência Text To SQL registrada em [[SPEC-1ANO-005 - Backend Spring Boot e contratos REST]]
 
 ## Campos opcionais para minhas regras
 
@@ -35,31 +38,39 @@ Preencha somente o que desejar tornar obrigatório. Um campo em branco não imp�
 
 ### Organização e arquitetura
 
-<!-- Convenções de nomes, responsabilidades das camadas, uso de interfaces/DTOs, padrões que você quer manter ou evitar. -->
+Os nomes de entidades e classes devem ser em portugues utilizar camelcase e ser de facil entendimento.
+Não utilize nomes sem sentido.
+
+Siga os exemplos:
+
+Entity: Usuario.java, Imagem.java, Livro.java
+Repository: IUsuarioRepository.java
+Controller: UsuarioController.java
+Service: UsuarioService.java
+
+Metodos, devem começar com letra minúscula e utilizar camelcase
+
 
 ### Java e Spring Boot
 
-<!-- Versões escolhidas, bibliotecas permitidas, uso de Lombok, validação, tratamento de exceções e padrões de código. -->
+Ultima versão estável do Spring Boot e Java 21.
 
 ### Banco de dados e imagens
 
-<!-- Banco, migrations, armazenamento, formatos de imagem, limites e regras de exclusão. -->
-
-### Frontend e aparência
-
-<!-- Componentes existentes que devem ser reutilizados, cores, temas, navegação, animações e acessibilidade. -->
+As imagens serão armazenadas em um vaut do Neon DataBase e os dados serão armazenados em um banco PostgreSQL.
 
 ### Forma de trabalho da IA
 
-<!-- Tamanho das alterações, explicações esperadas, quando perguntar e como registrar decisões. -->
+Seguir exatamente às specs. 
 
 ### Testes e definição de pronto
 
-<!-- Comandos e cenários que devem passar, além de evidências que você deseja receber. -->
+Testar todos os métodos.
 
 ### Git e publicação
 
-<!-- Repositório, branches, commits, PRs e condições para publicação. Não colocar tokens ou senhas. -->
+- Não colocar tokens ou senhas.
+- Criar branch develop onde todas as alterações devem acontecer.
 
 ## Como usar com uma IA
 
