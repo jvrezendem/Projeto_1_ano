@@ -1,9 +1,9 @@
 ---
 tipo: spec-feature
 area: 1Ano
-status: rascunho
+status: implementado
 spec_id: SPEC-1ANO-001
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -19,9 +19,9 @@ requisitos_relacionados:
 
 # SPEC-1ANO-001 - Autenticação e perfis
 
-**Estado:** rascunho para revisão; não representa implementação concluída.
+**Estado:** implementado e validado em 2026-10-06.
 **Origem:** [[00 - Projeto 1Ano#Fontes e limites]].
-**Branch:** não criada; este documento especifica o comportamento.
+**Branch:** `develop`.
 
 ## Relação com os requisitos do vault
 
@@ -33,9 +33,9 @@ requisitos_relacionados:
 
 ## Contexto e decisão
 
-O site tem duas contas predefinidas e uma tela de login. Não haverá cadastro público. O perfil exibe os dados da própria conta. A autenticação real ainda precisa ser integrada ao protótipo.
+O site tem duas contas predefinidas e uma tela de login. Não há cadastro público. O perfil exibe os dados da própria conta. A autenticação foi integrada ao backend Spring Boot e ao frontend React/Vite.
 
-**Proposta técnica:** sessão mantida pelo servidor, com cookie de sessão, usando Spring Security. Essa escolha simplifica o acesso privado às imagens no mesmo domínio. JWT não foi solicitado e não é uma decisão confirmada.
+**Decisão técnica confirmada:** sessão mantida pelo servidor, com cookie de sessão, usando Spring Security. Essa escolha simplifica o acesso privado às imagens no mesmo domínio. Não foi adotado JWT.
 
 ### Fronteira de responsabilidade
 
@@ -113,18 +113,18 @@ Senhas devem ser verificadas por um `PasswordEncoder` apropriado, sem armazename
 
 Cadastro, convites, login social, recuperação por e-mail, papéis administrativos e edição de perfil.
 
-## Questões abertas
+## Decisões encerradas na implementação
 
-| ID | Questão | Responsável | Momento | Bloqueia? |
-|---|---|---|---|---|
-| Q-A01 | Confirmar sessão por cookie e duração de 30 minutos. | Autor | Antes da implementação de autenticação | A escolha do mecanismo |
-| Q-A02 | Definir os dois identificadores e conteúdos dos perfis; fornecer credenciais fora do vault. | Autor | Antes do provisionamento real | Apenas dados reais |
+| ID | Decisão | Estado |
+|---|---|---|
+| Q-A01 | Sessão por cookie, com 30 minutos de inatividade. | Implementada |
+| Q-A02 | Duas contas e perfis fornecidos por configuração local ignorada pelo Git. | Implementada localmente; valores não documentados |
 
 ## Checklist antes do planejamento
 
 - [x] Histórias e casos de falha identificados.
 - [x] Requisitos vinculados e dados privados delimitados.
 - [x] Propostas diferenciadas de decisões do autor.
-- [ ] Mecanismo de autenticação e dados reais definidos.
+- [x] Mecanismo de autenticação e dados reais definidos fora do repositório.
 
 

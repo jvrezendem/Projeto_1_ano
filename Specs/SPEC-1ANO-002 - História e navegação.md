@@ -1,9 +1,9 @@
 ---
 tipo: spec-feature
 area: 1Ano
-status: rascunho
+status: implementado
 spec_id: SPEC-1ANO-002
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -19,9 +19,9 @@ requisitos_relacionados:
 
 # SPEC-1ANO-002 - História e navegação
 
-**Estado:** rascunho para revisão; não representa implementação concluída.
+**Estado:** implementado e validado em 2026-10-06.
 **Origem:** [[00 - Projeto 1Ano#Fontes e limites]].
-**Branch:** não criada; este documento especifica o comportamento.
+**Branch:** `develop`.
 
 ## Relação com os requisitos do vault
 
@@ -35,7 +35,7 @@ requisitos_relacionados:
 
 Reutilizar o frontend React existente, preservando o caráter romântico, os temas claro/escuro e a linguagem visual já trabalhada. A página inicial apresenta frase de destaque, história em sequência, orientações de uso e mapa. A navegação será por **sidebar**, conforme o pedido atual, substituindo a topbar como navegação principal.
 
-O protótipo usa React, Vite e CSS. O chat anterior registra que fotos e histórias são demonstrativas e que autenticação, upload e API ainda não foram implementados. Não tratar a prévia como produto completo.
+O frontend implementado usa React, Vite e CSS. Autenticação, perfis e a API privada já são reais; o conteúdo de história continua configurável e permanece vazio até o autor fornecer textos e fotos. Upload, galeria cronológica, mapa interativo e popup pertencem às specs posteriores e não devem ser tratados como concluídos por esta entrega.
 
 ### Fronteira de responsabilidade
 
@@ -120,18 +120,29 @@ Preservar tokens, fontes e componentes existentes quando adequados. O conteúdo 
 
 Novo redesign completo, editor de história, músicas, jogos, contador de namoro, cápsula do tempo e outras ideias não selecionadas no pedido.
 
+## Resultado da implementação
+
+- A página inicial autenticada consome `GET /api/v1/historia` com `cache: no-store` e apresenta frase, introdução, seções ordenadas, fotos opcionais e dicas.
+- Foram implementados estados de carregamento, vazio, erro com nova tentativa e falha isolada de imagem sem perda do texto.
+- A sidebar abre Inicial, Galeria e Perfil, encerra a sessão e se transforma em drawer móvel com foco inicial, fechamento por `Escape` e retorno do foco.
+- Tema claro/escuro e pausa de movimento são preferências locais não sensíveis, com fallback quando `localStorage` está indisponível e respeito a `prefers-reduced-motion`.
+- A composição foi validada sem overflow nas larguras 375, 430, 768, 1024, 1366, 1440 e 1920 px.
+- Galeria, mapa e lista têm superfícies de preparação e navegação. O cadastro de fotos, a galeria cronológica, os pins reais e o popup permanecem sob responsabilidade das Specs 003 e 004.
+- Nenhum texto, data, local ou foto pessoal foi inventado; sem configuração privada, a interface apresenta um estado vazio neutro.
+
 ## Questões abertas
 
 | ID | Questão | Responsável | Momento | Bloqueia? |
 |---|---|---|---|---|
 | Q-I01 | Fornecer história final, fotos e data de aniversário. | Autor | Antes da entrega do presente | Conteúdo final |
-| Q-I02 | Confirmar qual cópia do frontend será o repositório de implementação. | Autor | Antes de editar código | Integração do frontend |
+| Q-I02 | Confirmar qual cópia do frontend será o repositório de implementação. **Resolvida:** `oneyear/frontend`. | Autor | Resolvida em 2026-10-06 | Não |
 
 ## Checklist antes do planejamento
 
 - [x] Diferença entre sidebar solicitada e topbar existente registrada.
 - [x] Estados vazios, falhas e movimento reduzido especificados.
 - [x] Requisitos de responsividade vinculados.
-- [ ] Conteúdo real e repositório de implementação definidos.
+- [x] Repositório de implementação definido em `oneyear/frontend`.
+- [ ] Conteúdo pessoal real fornecido pelo autor; não bloqueia a implementação nem o estado vazio.
 
 

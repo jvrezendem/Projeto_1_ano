@@ -14,9 +14,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.imageio.ImageIO;
+import jakarta.servlet.http.Cookie;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
@@ -44,7 +46,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 		"app.usuarios.provisionar=false",
 		"app.armazenamento.tipo=teste",
 		"server.servlet.session.cookie.secure=false",
-		"app.historia.frase-principal=Uma história de teste"
+		"app.historia.frase-principal=Uma história de teste",
+		"app.historia.introducao=Introdução de teste",
+		"app.historia.dicas[0]=Dica de teste",
+		"app.historia.secoes[0].id=segunda",
+		"app.historia.secoes[0].ordem=2",
+		"app.historia.secoes[0].titulo=Segunda seção",
+		"app.historia.secoes[0].texto=Texto dois",
+		"app.historia.secoes[1].id=primeira",
+		"app.historia.secoes[1].ordem=1",
+		"app.historia.secoes[1].titulo=Primeira seção",
+		"app.historia.secoes[1].texto=Texto um"
 })
 @AutoConfigureMockMvc
 class ApiIntegrationTest {
@@ -58,6 +70,7 @@ class ApiIntegrationTest {
 	private String login;
 	private String segundoLogin;
 	private String senha;
+	private String segundaSenha;
 
 	@BeforeEach
 	void preparar() {
@@ -66,8 +79,9 @@ class ApiIntegrationTest {
 		login = "usuario-" + UUID.randomUUID();
 		segundoLogin = "par-" + UUID.randomUUID();
 		senha = UUID.randomUUID().toString();
+		segundaSenha = UUID.randomUUID().toString();
 		usuarios.save(new Usuario(login, encoder.encode(senha), "Pessoa Um", "avatares/um.png", "Descrição", List.of("Gentil")));
-		usuarios.save(new Usuario(segundoLogin, encoder.encode(UUID.randomUUID().toString()),
+		usuarios.save(new Usuario(segundoLogin, encoder.encode(segundaSenha),
 				"Pessoa Dois", null, null, List.of()));
 	}
 
@@ -93,17 +107,27 @@ class ApiIntegrationTest {
 				.contentType("application/json")
 				.content("{\"login\":\"inexistente\",\"senha\":\"x\"}"))
 				.andExpect(status().isUnauthorized())
-				.andExpect(jsonPath("$.codigo").value("CREDENCIAIS_INVALIDAS"));
+				.andExpect(jsonPath("$.codigo").value("CREDENCIAIS_INVALIDAS"))
+				.andExpect(jsonPath("$.mensagem").value("Login ou senha inválidos."));
+		mvc.perform(post("/api/v1/auth/login").with(csrf())
+				.contentType("application/json")
+				.content("{\"login\":\"" + login + "\",\"senha\":\"incorreta\"}"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.codigo").value("CREDENCIAIS_INVALIDAS"))
+				.andExpect(jsonPath("$.mensagem").value("Login ou senha inválidos."));
 
-		MockHttpSession sessao = (MockHttpSession) mvc.perform(post("/api/v1/auth/login").with(csrf())
+		MvcResult resultadoLogin = mvc.perform(post("/api/v1/auth/login").with(csrf())
 				.contentType("application/json")
 				.content("{\"login\":\"" + login + "\",\"senha\":\"" + senha + "\"}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.nome").value("Pessoa Um"))
-				.andReturn().getRequest().getSession(false);
+				.andReturn();
+		MockHttpSession sessao = (MockHttpSession) resultadoLogin.getRequest().getSession(false);
+		String idSessao = sessao.getId();
 
 		mvc.perform(get("/api/v1/me").session(sessao))
 				.andExpect(status().isOk())
+				.andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
 				.andExpect(jsonPath("$.caracteristicas[0]").value("Gentil"))
 				.andExpect(jsonPath("$.avatarUrl").value("/api/v1/me/avatar"));
 		mvc.perform(get("/api/v1/me/avatar").session(sessao))
@@ -113,9 +137,27 @@ class ApiIntegrationTest {
 				.andExpect(jsonPath("$.codigo").value("AVATAR_NAO_ENCONTRADO"));
 		mvc.perform(get("/api/v1/historia").session(sessao))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.frasePrincipal").value("Uma história de teste"));
+				.andExpect(jsonPath("$.frasePrincipal").value("Uma história de teste"))
+				.andExpect(jsonPath("$.introducao").value("Introdução de teste"))
+				.andExpect(jsonPath("$.secoes[0].id").value("primeira"))
+				.andExpect(jsonPath("$.secoes[1].id").value("segunda"))
+				.andExpect(jsonPath("$.dicas[0]").value("Dica de teste"));
 		mvc.perform(post("/api/v1/auth/logout").session(sessao).with(csrf()))
 				.andExpect(status().isNoContent());
+		mvc.perform(get("/api/v1/me").cookie(new Cookie("JSESSIONID", idSessao)))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.codigo").value("NAO_AUTENTICADO"));
+
+		MockHttpSession segundaSessao = (MockHttpSession) mvc.perform(post("/api/v1/auth/login").with(csrf())
+				.contentType("application/json")
+				.content("{\"login\":\"" + segundoLogin + "\",\"senha\":\"" + segundaSenha + "\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome").value("Pessoa Dois"))
+				.andExpect(jsonPath("$.avatarUrl").doesNotExist())
+				.andReturn().getRequest().getSession(false);
+		mvc.perform(get("/api/v1/me").session(segundaSessao))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome").value("Pessoa Dois"));
 	}
 
 	@Test

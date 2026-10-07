@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-003 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Transformar o site em um presente pessoal e permitir reviver o primeiro ano.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado conteúdo real configurado, quando abrir a página inicial, então a frase de destaque e a história aparecem na ordem definida.
-- [ ] **Fronteira** — Dado nenhuma foto cadastrada, quando abrir a história, então os textos continuam disponíveis.
-- [ ] **Falha** — Dado falha ao carregar uma foto, quando ler a história, então o texto continua legível com indicação de imagem indisponível.
+- [x] **Sucesso** — Dado conteúdo real configurado, quando abrir a página inicial, então a frase de destaque e a história aparecem na ordem definida.
+- [x] **Fronteira** — Dado nenhuma foto cadastrada, quando abrir a história, então os textos continuam disponíveis.
+- [x] **Falha** — Dado falha ao carregar uma foto, quando ler a história, então o texto continua legível com indicação de imagem indisponível.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Transformar o site em um presente pessoal e permitir reviver o primeiro ano.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: teste de integração confirma frase, introdução, dicas e ordenação; QA renderizado confirmou conteúdo sem foto e fallback de imagem quebrada sem perda do texto.
 - **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `CT-RF-1ANO-003-S`, `CT-RF-1ANO-003-F` e `CT-RF-1ANO-003-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `ApiIntegrationTest` e roteiro renderizado da Spec 002 cobrem `CT-RF-1ANO-003-S`, `CT-RF-1ANO-003-F` e `CT-RF-1ANO-003-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Transformar o site em um presente pessoal e permitir reviver o primeiro ano.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-06 | Implementação e validação dos três cenários de aceite | IA |
 
 ## Revisão rápida
 

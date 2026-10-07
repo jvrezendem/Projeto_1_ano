@@ -36,9 +36,14 @@ class UsuariosIniciaisConfigTest {
 
 	@Test
 	void recusaConfiguracaoIncompleta() {
-		AplicacaoProperties properties = new AplicacaoProperties();
+		AplicacaoProperties incompleta = new AplicacaoProperties();
 		assertThrows(IllegalStateException.class,
-				() -> new UsuariosIniciaisConfig(mock(IUsuarioRepository.class), properties).run(null));
+				() -> new UsuariosIniciaisConfig(mock(IUsuarioRepository.class), incompleta).run(null));
+
+		AplicacaoProperties duplicada = propriedadesValidas();
+		duplicada.getUsuarios().getSegunda().setLogin("um");
+		assertThrows(IllegalStateException.class,
+				() -> new UsuariosIniciaisConfig(mock(IUsuarioRepository.class), duplicada).run(null));
 	}
 
 	private AplicacaoProperties propriedadesValidas() {

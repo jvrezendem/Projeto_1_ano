@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-004 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; prevalece sobre a topbar do protótipo; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Facilitar o acesso às áreas principais sem perder a continuidade visual.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado uma sessão ativa, quando selecionar Galeria, então a galeria abre e a opção fica marcada como ativa.
-- [ ] **Fronteira** — Dado viewport de 375 px, quando abrir o menu, então as mesmas opções ficam acessíveis em menu recolhível.
-- [ ] **Falha** — Dado sessão expirada, quando selecionar uma área protegida, então o usuário é encaminhado ao login.
+- [x] **Sucesso** — Dado uma sessão ativa, quando selecionar Galeria, então a galeria abre e a opção fica marcada como ativa.
+- [x] **Fronteira** — Dado viewport de 375 px, quando abrir o menu, então as mesmas opções ficam acessíveis em menu recolhível.
+- [x] **Falha** — Dado sessão expirada, quando selecionar uma área protegida, então o usuário é encaminhado ao login.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Facilitar o acesso às áreas principais sem perder a continuidade visual.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: QA renderizado navegou por Inicial, Galeria e Perfil, conferiu o item ativo, exercitou o drawer em 375 px e simulou expiração da sessão com retorno ao login.
 - **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `CT-RF-1ANO-004-S`, `CT-RF-1ANO-004-F` e `CT-RF-1ANO-004-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: roteiro renderizado da Spec 002 cobre `CT-RF-1ANO-004-S`, `CT-RF-1ANO-004-F` e `CT-RF-1ANO-004-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Facilitar o acesso às áreas principais sem perder a continuidade visual.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-06 | Implementação e validação dos três cenários de aceite | IA |
 
 ## Revisão rápida
 

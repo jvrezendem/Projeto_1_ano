@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: parcialmente-implementado
 prioridade: Must
-versao: 0.1
+versao: 0.2
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RNF-1ANO-002 |
 | Tipo | Qualidade |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Parcialmente implementado |
 | Responsável | Autor do projeto |
 | Origem | Briefing anterior do frontend; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Permitir que o presente seja usado no celular e no computador.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado cada largura prevista, quando navegar por login, história, galeria e perfil, então os elementos permanecem legíveis e acionáveis.
+- [x] **Sucesso** — Dado cada largura prevista, quando navegar por login, história, galeria e perfil, então os elementos permanecem legíveis e acionáveis.
 - [ ] **Fronteira** — Dado popup e formulário abertos em 375 px, quando interagir, então botões de confirmação e fechamento permanecem alcançáveis.
-- [ ] **Falha** — Dado texto longo ou imagem com falha, quando renderizar em 375 px, então o conteúdo não estoura a largura da página.
+- [x] **Falha** — Dado texto longo ou imagem com falha, quando renderizar em 375 px, então o conteúdo não estoura a largura da página.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Permitir que o presente seja usado no celular e no computador.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: QA renderizado confirmou login, história, galeria e perfil sem overflow em 375, 430, 768, 1024, 1366, 1440 e 1920 px, incluindo texto longo sem quebras e imagem com falha. O critério de popup/formulário continua pendente das Specs 003 e 004.
 - **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `CT-RNF-1ANO-002-S`, `CT-RNF-1ANO-002-F` e `CT-RNF-1ANO-002-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: roteiro renderizado da Spec 002 cobre `CT-RNF-1ANO-002-S` e `CT-RNF-1ANO-002-E`; `CT-RNF-1ANO-002-F` permanece reservado para o formulário e popup das Specs 003/004.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Permitir que o presente seja usado no celular e no computador.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 0.2 | 2026-10-06 | Validação das telas existentes nas sete larguras; popup e formulário permanecem pendentes | IA |
 
 ## Revisão rápida
 

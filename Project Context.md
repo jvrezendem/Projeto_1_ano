@@ -231,6 +231,300 @@ Também foram executados `git diff --check`, compilação limpa e busca por cred
 - Não foi possível executar contra uma instância Neon real porque credenciais, bucket e URL do banco não foram fornecidos, e as regras proíbem inventá-los ou versioná-los.
 - Os dois logins, hashes BCrypt, perfis, avatares e a história real ainda precisam ser fornecidos externamente pelo autor.
 - A migração foi revisada e o modelo foi exercitado por H2 em modo PostgreSQL, mas a aplicação da migration em Neon/PostgreSQL real deve fazer parte da configuração do ambiente.
-- Não houve publicação, contratação de serviço ou alteração do frontend.
+- Na execução da Spec 005 não houve publicação, contratação de serviço ou alteração do frontend; a implementação posterior do frontend está registrada abaixo na execução da Spec 001.
 - O provedor de mapa continua sendo uma decisão do frontend; o backend já entrega coordenadas e pins conforme o contrato.
 - A execução dos testes mostra um aviso do Mockito sobre carregamento dinâmico de agente em versões futuras do JDK. Ele não causou falha no Java 21 usado e não afeta o código de produção.
+
+## Configuração privada local
+
+- Criado `oneyear/config/private.yaml`, apontado por `APP_PRIVATE_CONFIG`, com a estrutura válida de `app.historia.secoes` e lista inicialmente vazia.
+- Nenhum texto, data, foto ou fato pessoal foi inventado; o conteúdo real deve ser preenchido pelo autor.
+- Adicionado `config/private.yaml` ao `.gitignore` do backend para impedir o versionamento acidental da história privada.
+- Adicionado o `spring-boot-configuration-processor` ao build para gerar metadados das propriedades `app.*` e eliminar o aviso incorreto de propriedade desconhecida no `application.yaml`.
+
+# Execução da SPEC-1ANO-001 — Autenticação e perfis
+
+## Estado e escopo
+
+- Data da implementação e validação: 2026-10-06.
+- Spec executada: `SPEC-1ANO-001 - Autenticação e perfis`, atualizada para o estado `implementado`, versão 1.0.
+- Regras aplicadas: `Regras para IA.md`.
+- Branch usada: `develop`.
+- Frontend implementado em `oneyear/frontend/`, com React 19, Vite 7.3.7, Geist e ícones Lucide.
+- Backend de autenticação da Spec 005 reaproveitado e seus testes ampliados para cobrir integralmente a Spec 001.
+- Não foram implementados cadastro, recuperação de senha, login social, edição de perfil ou papéis administrativos, pois estão fora do escopo.
+
+## Decisões confirmadas
+
+- Sessão mantida no servidor pelo Spring Security, com cookie `HttpOnly`, `SameSite=Lax`, `Secure` por padrão e expiração após 30 minutos de inatividade.
+- Fluxo de escrita protegido por CSRF: obtenção do token, login, renovação do token após autenticar e logout autenticado.
+- Exatamente duas contas provisionadas por configuração privada; não existe rota nem interface de cadastro.
+- Login e senha incorretos retornam a mesma mensagem genérica, sem revelar se uma conta existe.
+- O frontend usa apenas memória para nome, avatar, descrição e características. Nenhum dado pessoal, credencial ou hash foi incluído no bundle.
+- A interface consulta o perfil em `/api/v1/me`, trata 401 como sessão ausente/expirada e retorna ao login.
+- Ao sair, os dados privados são removidos da interface imediatamente. Se a rede falhar, a interface informa a falta de confirmação e repete a invalidação quando a conexão retorna.
+- A aplicação revalida a sessão ao recuperar foco e ao voltar pelo histórico do navegador; as chamadas privadas usam `cache: no-store` e o backend envia proteção contra cache.
+- Em desenvolvimento, o Vite encaminha `/api` para `http://localhost:8080`, permitindo o uso de cookies no mesmo host percebido pelo navegador. Em produção, frontend e API devem permanecer sob HTTPS e mesma origem, conforme definido na spec.
+
+## Interface implementada
+
+- Tela de login com campos identificados, validação de obrigatoriedade, exibição/ocultação de senha, estado de envio e mensagem genérica de falha.
+- Página principal privada simples para confirmar a entrada bem-sucedida e oferecer acesso ao perfil.
+- Perfil próprio com nome, avatar privado ou iniciais como fallback, descrição vazia segura e lista de características.
+- Sidebar desktop e painel móvel com Principal, Perfil e Sair. Galeria aparece desabilitada porque pertence a specs posteriores.
+- Menu móvel com backdrop, fechamento por clique ou `Escape`, foco inicial no primeiro item e devolução do foco ao botão que abriu o menu.
+- Layout responsivo sem rolagem horizontal nos viewports verificados, foco visível, regiões e rótulos acessíveis, contraste adequado e respeito a `prefers-reduced-motion`.
+
+## Direção visual e recursos
+
+O frontend existente indicado nas regras foi analisado e sua linguagem foi preservada: marca `ana.`, fundos branco e azul-marinho, azul vivo como ação principal, vermelho como acento afetivo, Geist, grandes títulos editoriais, bordas discretas e navegação lateral.
+
+Foram gerados e versionados dois conceitos visuais de referência:
+
+- `oneyear/frontend/design-references/spec001-login.png`;
+- `oneyear/frontend/design-references/spec001-perfil.png`.
+
+Também foi criada a arte abstrata sem dados pessoais `oneyear/frontend/public/login-memories.png`, usada no painel direito do login. Campos, botões, navegação e conteúdo do perfil permanecem em HTML/CSS e não foram incorporados na imagem.
+
+### Registro de fidelidade visual
+
+| Ponto comparado | Resultado na renderização final |
+|---|---|
+| Composição do login | Divisão equilibrada entre formulário claro e arte azul-marinho, preservando a leitura do conceito. |
+| Hierarquia tipográfica | Marca compacta, título editorial dominante, texto auxiliar e rótulos mantêm a mesma ordem visual. |
+| Cores e acentos | Azul-marinho, branco, azul de ação e vermelho afetivo foram mantidos de forma consistente. |
+| Formulário | Campos largos, botão primário arredondado, foco visível e mensagem de erro acessível seguem o conceito. |
+| Perfil desktop | Sidebar fixa, título grande, avatar, identidade e características reproduzem a estrutura aprovada. |
+| Navegação móvel | Painel lateral contém marca, itens, estado ativo e ação Sair, como no conceito; o fundo recebe overlay. |
+| Responsividade | A composição foi adaptada para 375×812 sem comprimir controles, truncar textos ou criar overflow horizontal. |
+
+## Arquivos adicionados e alterados
+
+Frontend adicionado:
+
+- configuração: `package.json`, `package-lock.json`, `vite.config.js`, `eslint.config.js`, `index.html` e `README.md`;
+- aplicação: `src/main.jsx`, `src/App.jsx`, `src/api.js` e `src/styles.css`;
+- componentes: `Button.jsx`, `LoginPage.jsx`, `HomePage.jsx`, `ProfilePage.jsx` e `Sidebar.jsx`;
+- teste: `test/api.test.js`;
+- referências e arte: os três arquivos PNG descritos acima.
+
+Backend e documentação alterados:
+
+- `ApiIntegrationTest.java`: adicionada autenticação determinística da segunda conta, igualdade da resposta genérica para login inexistente e senha errada, verificação de `no-store`, invalidação real da sessão após logout e isolamento entre perfis;
+- `UsuariosIniciaisConfigTest.java`: adicionada rejeição de logins duplicados;
+- `oneyear/.gitignore`: adicionados `frontend/node_modules/` e `frontend/dist/`, mantendo `.env` e arquivos privados fora do Git;
+- `oneyear/src/main/resources/application.yaml`: mantida a importação segura do `.env` e removido espaço residual na configuração do banco;
+- `Specs/SPEC-1ANO-001 - Autenticação e perfis.md`: estado, versão, decisões e checklist atualizados após a implementação;
+- este `Project Context.md`: registro integral da execução.
+
+## Verificações executadas
+
+### Backend
+
+Comando final equivalente a `mvn clean test`, usando Java 21 e o repositório Maven local:
+
+```text
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+O aviso do Mockito sobre carregamento dinâmico futuro permanece informativo e não afetou os testes.
+
+### Frontend
+
+```text
+npm run lint  -> aprovado
+npm test      -> 2 testes aprovados, 0 falhas
+npm run build -> aprovado com Vite 7.3.7
+```
+
+Os testes de API do frontend confirmaram cookies, `no-store`, sequência CSRF/login/renovação e CSRF/logout.
+
+### Navegador e inspeção visual
+
+Como o plugin de navegador não estava disponível no ambiente, foi usado Playwright com Microsoft Edge em modo headless, conforme o fallback de teste. A API foi interceptada apenas nessa verificação visual; a API real foi validada separadamente pelos testes de integração Spring.
+
+Fluxos exercitados:
+
+- desktop 1440×900: login vazio, campos obrigatórios, credenciais inválidas, credenciais válidas, página privada, perfil e logout;
+- mobile 375×812 com movimento reduzido: perfil, abertura do menu, foco no primeiro item, fechamento por `Escape` e retorno de foco;
+- título da página, ausência de overflow horizontal e ausência de erros inesperados de console.
+
+Capturas finais de QA ficaram fora do repositório em `%TEMP%/oneyear-spec001-qa/`: `login-desktop.png`, `perfil-desktop.png` e `perfil-mobile-menu.png`. Elas foram inspecionadas visualmente contra os conceitos versionados após a última alteração de CSS.
+
+## Matriz dos critérios de sucesso
+
+| Critério | Evidência | Estado |
+|---|---|---|
+| As duas contas entram e recebem o próprio perfil | Teste de integração autentica as duas contas e compara os perfis. | Atendido |
+| Credenciais inválidas não revelam a existência da conta | Teste compara login inexistente com senha errada e exige a mesma resposta 401. | Atendido |
+| Sessão expirada retorna ao login | Frontend trata 401 em `/me`; fluxo e estado foram testados. | Atendido |
+| Perfil suporta foto e campos vazios | Componente usa avatar/URL privado ou iniciais e fallbacks de descrição/características. | Atendido |
+| Logout impede novo acesso privado | Teste reutiliza o cookie invalidado e recebe 401. | Atendido |
+| Histórico/cache não restaura dados privados | Estado somente em memória, `no-store` no cliente/servidor e revalidação em `pageshow`. | Atendido |
+| Falha de rede no logout limpa a tela e tenta novamente | Limpeza local imediata, aviso e repetição no evento `online`. | Atendido |
+| Não há cadastro nem credenciais públicas | Ausência de rota/interface e busca estrutural do bundle. | Atendido |
+| Conteúdo e imagens exigem sessão | Regras Spring Security e testes de acesso anônimo. | Atendido |
+
+## Configuração privada e limites externos
+
+- O arquivo local ignorado `oneyear/.env` possui valores preenchidos para login, hash BCrypt e nome das duas contas; os valores não foram lidos para a documentação nem expostos no Git.
+- A validação com Neon/PostgreSQL e Object Storage reais não foi executada porque depende de credenciais e serviços externos. O comportamento de autenticação foi validado com H2 em memória e o armazenamento por testes isolados.
+- O empacotamento do frontend dentro do JAR não foi adicionado: no desenvolvimento, frontend e backend são iniciados separadamente; a publicação deve servir o build do Vite e a API sob a mesma origem.
+- A Galeria permanece apenas indicada e desabilitada nesta interface, pois sua implementação pertence a outras specs.
+
+## Correção posterior do build Maven
+
+- Em 2026-10-06, o parent do `pom.xml` havia sido alterado localmente para Spring Boot 3.4.5, incompatível com os starters modulares usados pelo projeto.
+- O parent foi restaurado para Spring Boot 4.1.1, versão definida pela implementação e compatível com `spring-boot-starter-flyway`, `spring-boot-starter-webmvc`, `spring-boot-starter-security-test` e `spring-boot-starter-webmvc-test`.
+- Após a correção, `mvn clean test` terminou com `BUILD SUCCESS`: 14 testes executados, sem falhas ou erros.
+
+## Correção posterior do login local
+
+- O login pelo navegador em `http://127.0.0.1:5173` era recusado com HTTP 403 antes da autenticação porque a configuração local de CORS permitia somente `http://localhost:5173`.
+- A configuração privada `APP_CORS_ALLOWED_ORIGINS` foi ajustada para aceitar as duas origens locais: `http://localhost:5173` e `http://127.0.0.1:5173`.
+- As duas contas já haviam sido confirmadas com sucesso por CSRF, login e consulta autenticada de `/api/v1/me`; o erro era exclusivamente a origem enviada pelo navegador.
+
+# Execução da SPEC-1ANO-002 — História e navegação
+
+## Estado e escopo
+
+- Data da implementação e validação: 2026-10-06.
+- Spec executada: `SPEC-1ANO-002 - História e navegação`, atualizada para `implementado`, versão 1.0.
+- Regras aplicadas: `Regras para IA.md`.
+- Branch usada: `develop`.
+- Implementação realizada em `oneyear/frontend`, reaproveitando a autenticação e o contrato privado de história existentes no backend.
+- O escopo entregue compreende página inicial com história, navegação entre Inicial/Galeria/Perfil, logout, estados da consulta, temas, controle de movimento, acessibilidade do menu e responsividade.
+- Upload, galeria cronológica, mapa interativo, pins e popup não foram antecipados: pertencem às Specs 003 e 004. A Galeria e a área mapa/lista receberam superfícies preparatórias para que a navegação desta spec seja funcional.
+- Nenhum fato pessoal foi criado. Quando o autor ainda não configurou frase, introdução, seções ou fotos, a página apresenta um estado vazio neutro.
+
+## Implementação funcional
+
+- `HistoriaPage.jsx` consulta `GET /api/v1/historia` somente após autenticação, usando cookies e `cache: no-store` pelo cliente da API.
+- Frase principal, introdução, seções e dicas vêm da resposta privada. As seções são exibidas na ordem devolvida pelo backend; data e foto permanecem opcionais.
+- Foram implementados skeleton de carregamento, estado vazio, erro com nova tentativa, preservação de conteúdo já carregado em falha de atualização e fallback “Imagem indisponível” quando apenas uma foto falha.
+- A página contém hero editorial, timeline vertical, bloco de orientações e preparação mapa/lista. A arte abstrata existente é usada como representação não pessoal até a Spec 004 fornecer memórias reais.
+- `Sidebar.jsx` oferece Inicial, Galeria, Perfil e Sair. Em telas menores, torna-se drawer com `aria-expanded`, foco no primeiro item, fechamento por backdrop ou `Escape` e devolução do foco ao botão acionador.
+- `GalleryPage.jsx` fornece uma rota autenticada e um estado preparatório acessível. O texto deixa explícito que o cadastro e a organização cronológica serão adicionados na spec própria.
+- `App.jsx` controla as rotas por hash, revalida a sessão antes de trocar de área protegida, retorna ao login em 401 e mantém os dados privados somente em memória.
+- `api.js` recebeu a operação `obterHistoria`, sem incluir conteúdo privado no bundle.
+
+## Tema, movimento e acessibilidade
+
+- `preferences.js` concentra tema claro/escuro e pausa de movimento, lê preferências do sistema e usa acesso protegido ao `localStorage`.
+- A troca de tema continua funcionando durante a sessão mesmo quando o armazenamento local lança erro; a persistência é restaurada quando disponível.
+- O atributo `data-theme` aplica tokens semânticos a login, história, galeria, perfil, navegação, estados e controles existentes.
+- O controle de movimento permite pausar e retomar animações. Com `prefers-reduced-motion: reduce`, a pausa é automática, o controle informa o estado e nenhum conteúdo depende de animação para aparecer.
+- Estados de foco visível, regiões nomeadas, textos alternativos/fallbacks e controles nativos foram preservados. Não há animação decorativa contínua nem parallax obrigatório.
+
+## Direção visual e referências
+
+Foram gerados com ImageGen e versionados dois conceitos antes da implementação:
+
+- `oneyear/frontend/design-references/spec002-historia-desktop.png`;
+- `oneyear/frontend/design-references/spec002-historia-mobile.png`.
+
+Os conceitos preservam a linguagem estabelecida na Spec 001: marca `ana.`, azul-marinho, branco, azul de ação, vermelho afetivo, Geist, grandes títulos editoriais, linhas finas e composição assimétrica. Imagens geradas foram usadas somente como referência e arte; navegação, textos, botões, timeline, controles, estados e conteúdo continuam em HTML/CSS acessível.
+
+### Registro de fidelidade visual
+
+| Ponto comparado | Resultado na renderização final |
+|---|---|
+| Estrutura desktop | Sidebar fixa, hero amplo, timeline, faixa azul-marinho e área mapa/lista seguem a mesma sequência e proporção geral do conceito. |
+| Estrutura móvel | Cabeçalho compacto, hero escuro, timeline em coluna única e drawer sobreposto correspondem à direção aprovada. |
+| Hierarquia | Marca, frase principal, títulos de seção, datas e textos auxiliares mantêm a hierarquia editorial de alto contraste. |
+| Paleta e temas | Azul-marinho, branco, azul vivo e vermelho foram preservados; a mesma composição recebeu equivalentes coerentes no tema escuro. |
+| Timeline | Linha central/vertical, marcadores e alternância assimétrica no desktop se reorganizam sem sobreposição no celular. |
+| Navegação | Estado ativo, agrupamento dos itens e ação Sair correspondem ao conceito; os controles de preferência são botões reais acessíveis. |
+| Responsividade | As sete larguras exigidas mantiveram leitura, alcance dos controles e ausência de overflow horizontal. |
+| Conteúdo dinâmico | Textos e fotos do conceito eram genéricos; a versão final usa exclusivamente a API ou fallbacks neutros, evitando inventar dados pessoais. |
+
+A renderização final foi inspecionada novamente, lado a lado com os dois conceitos, após o último ajuste de tamanho e espaçamento do hero. Não permaneceu diferença material corrigível. A ordem móvel prioriza título/texto antes da foto por leitura semântica, e mapa/pins reais permanecem ausentes intencionalmente até a Spec 004.
+
+## Arquivos adicionados e alterados
+
+Adicionados ao frontend:
+
+- `src/preferences.js`;
+- `src/components/VisualControls.jsx`;
+- `src/components/HistoriaPage.jsx`;
+- `src/components/GalleryPage.jsx`;
+- `design-references/spec002-historia-desktop.png`;
+- `design-references/spec002-historia-mobile.png`;
+- `test/preferences.test.js`.
+
+Alterados:
+
+- `src/App.jsx`: rotas privadas, preferências visuais, revalidação de sessão e composição das páginas;
+- `src/api.js`: consulta autenticada da história;
+- `src/components/LoginPage.jsx`: controle de tema na tela pública;
+- `src/components/Sidebar.jsx`: navegação completa, drawer móvel e controles visuais;
+- `src/styles.css`: tokens de tema, timeline, estados, página da galeria, responsividade e movimento reduzido;
+- `README.md`: funcionalidades atuais, fronteiras das próximas specs e tratamento privado da história;
+- `test/api.test.js`: contrato da consulta privada de história;
+- `ApiIntegrationTest.java`: conteúdo de teste, ordenação das seções, introdução e dicas;
+- `SPEC-1ANO-002 - História e navegação.md` e requisitos vinculados: estado, evidências e fronteiras atualizados;
+- este `Project Context.md`: registro integral da execução.
+
+O antigo `HomePage.jsx`, que era apenas uma confirmação temporária da Spec 001, foi removido e substituído pela página real de história.
+
+## Verificações automatizadas
+
+### Frontend
+
+```text
+npm run lint  -> aprovado
+npm test      -> 6 testes aprovados, 0 falhas
+npm run build -> aprovado com Vite 7.3.7
+```
+
+Os testes cobrem cookies e `no-store` na consulta de história, preferências salvas, preferência do sistema, movimento reduzido e indisponibilidade de armazenamento local.
+
+### Backend
+
+```text
+mvn clean test
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Além das verificações anteriores de autenticação, o teste de integração confirma frase, introdução, dicas e ordenação das seções privadas. O aviso informativo do Mockito sobre carregamento dinâmico futuro permanece sem impacto no resultado.
+
+## QA renderizado e responsividade
+
+O plugin de navegador não estava disponível neste ambiente. Foi usado Playwright temporário com Microsoft Edge headless como fallback; ele não foi adicionado às dependências do projeto. A API foi interceptada somente para a verificação visual, enquanto o contrato real permaneceu coberto pelos testes Spring.
+
+Foram exercitados exatamente os viewports exigidos: 375×812, 430×932, 768×1024, 1024×800, 1366×900, 1440×900 e 1920×1080. Em todos foram verificados identidade da página, carregamento da história, ausência de overflow horizontal e inexistência de erros inesperados de console.
+
+O roteiro também confirmou:
+
+- seções com e sem foto, fallback de imagem quebrada e texto longo sem quebra natural;
+- tema claro para escuro, persistência após recarga e fallback de armazenamento por teste unitário;
+- pausa de movimento e conteúdo visível com `prefers-reduced-motion`;
+- foco inicial, fechamento por `Escape` e retorno do foco no drawer móvel;
+- navegação e estado ativo em Galeria/Perfil;
+- sessão expirada com retorno ao login;
+- história vazia e orientações preservadas.
+
+Capturas de QA ficaram fora do repositório em `%TEMP%/oneyear-spec002-qa/`: `historia-desktop-1440.png`, `historia-mobile-375.png` e `menu-mobile-375.png`. As capturas finais e os conceitos versionados foram inspecionados visualmente após o último ajuste de CSS.
+
+## Matriz dos critérios da Spec 002
+
+| Critério | Evidência | Estado |
+|---|---|---|
+| Frase, introdução e história ordenada | Contrato Spring e página renderizada com resposta autenticada. | Atendido |
+| História permanece útil sem fotos | Estado sem foto e estado totalmente vazio verificados. | Atendido |
+| Falha isolada de foto não remove texto | Fallback renderizado e ausência de overflow confirmados. | Atendido |
+| Sidebar/drawer abre Inicial, Galeria e Perfil | Navegação, item ativo e sessão expirada exercitados. | Atendido |
+| Foco previsível no menu móvel | Primeiro item, `Escape` e retorno ao acionador confirmados em 375 px. | Atendido |
+| Tema claro/escuro e persistência | Alternância, recarga e indisponibilidade de armazenamento cobertas. | Atendido |
+| Movimento reduzido e pausa | Preferência do sistema e controle manual cobertos sem ocultar texto. | Atendido |
+| Sete larguras sem overflow horizontal | QA renderizado nos sete viewports especificados. | Atendido |
+| Upload, popup e mapa/pins reais | Pertencem às Specs 003/004 e não foram declarados como concluídos. | Fora do escopo desta execução |
+
+## Pendências externas e continuidade
+
+- O autor ainda precisa fornecer frase, introdução, seções, datas e fotos reais no arquivo privado/configuração de ambiente. A ausência desses dados não impede a aplicação de iniciar nem a página de exibir o estado vazio.
+- A validação visual usou conteúdo neutro interceptado; nenhum dado da conta real, do Neon ou do armazenamento foi lido ou copiado para imagens, testes ou documentação.
+- A integração ao Neon e ao Object Storage reais continua dependente das credenciais e dados externos já registrados anteriormente.
+- `RNF-1ANO-002` e `RNF-1ANO-003` foram marcados como parcialmente implementados porque seus critérios também abrangem formulário de upload, seleção de foto e popup, componentes que serão entregues pelas Specs 003/004.

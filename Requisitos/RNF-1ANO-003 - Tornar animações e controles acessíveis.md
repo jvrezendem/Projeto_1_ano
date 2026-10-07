@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: parcialmente-implementado
 prioridade: Must
-versao: 0.1
+versao: 0.2
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RNF-1ANO-003 |
 | Tipo | Qualidade |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Parcialmente implementado |
 | Responsável | Autor do projeto |
 | Origem | Briefing anterior e derivação das animações solicitadas; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -38,7 +38,7 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 ## Critérios de aceite
 
 - [ ] **Sucesso** — Dado uso somente de teclado, quando abrir menu, escolher foto e fechar popup, então há foco visível e o foco retorna ao acionador.
-- [ ] **Fronteira** — Dado prefers-reduced-motion ativo, quando rolar a história, então o conteúdo aparece sem parallax ou movimento decorativo contínuo.
+- [x] **Fronteira** — Dado prefers-reduced-motion ativo, quando rolar a história, então o conteúdo aparece sem parallax ou movimento decorativo contínuo.
 - [ ] **Falha** — Dado animação interrompida ou desativada, quando abrir e fechar um popup, então o conteúdo não fica preso nem inacessível.
 
 ## Regras e limites
@@ -51,9 +51,9 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: QA renderizado confirmou foco visível, foco inicial e retorno ao acionador no menu, conteúdo integral com `prefers-reduced-motion` e controle de pausa. Escolha de foto e popup permanecem pendentes das Specs 003/004.
 - **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `CT-RNF-1ANO-003-S`, `CT-RNF-1ANO-003-F` e `CT-RNF-1ANO-003-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `preferences.test.js` e roteiro renderizado da Spec 002 cobrem movimento reduzido e o menu; os cenários completos de foto/popup permanecem reservados para as Specs 003/004.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 0.2 | 2026-10-06 | Validação de movimento reduzido e controles existentes; foto e popup permanecem pendentes | IA |
 
 ## Revisão rápida
 

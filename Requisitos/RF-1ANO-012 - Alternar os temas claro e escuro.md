@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-012 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido anterior recuperado; preservação do protótipo; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Preservar uma capacidade já prevista no protótipo.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado tema claro ativo, quando alternar o tema, então página, menu, popup e formulários adotam o tema escuro.
-- [ ] **Fronteira** — Dado preferência do tema salva, quando reabrir o site, então a preferência é restaurada.
-- [ ] **Falha** — Dado armazenamento local indisponível, quando trocar o tema, então a troca funciona durante a sessão da página.
+- [x] **Sucesso** — Dado tema claro ativo, quando alternar o tema, então as telas e componentes implementados adotam o tema escuro.
+- [x] **Fronteira** — Dado preferência do tema salva, quando reabrir o site, então a preferência é restaurada.
+- [x] **Falha** — Dado armazenamento local indisponível, quando trocar o tema, então a troca funciona durante a sessão da página.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Preservar uma capacidade já prevista no protótipo.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: QA renderizado alternou e restaurou o tema após recarga; testes unitários cobrem preferência salva, preferência do sistema e indisponibilidade de `localStorage`.
 - **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `CT-RF-1ANO-012-S`, `CT-RF-1ANO-012-F` e `CT-RF-1ANO-012-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `preferences.test.js` e roteiro renderizado da Spec 002 cobrem `CT-RF-1ANO-012-S`, `CT-RF-1ANO-012-F` e `CT-RF-1ANO-012-E`. Popup e upload herdarão os mesmos tokens nas Specs 003/004.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Preservar uma capacidade já prevista no protótipo.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-06 | Implementação e validação dos três cenários de aceite no escopo existente | IA |
 
 ## Revisão rápida
 
