@@ -1,10 +1,10 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
-data: 2026-10-01
+versao: 1.0
+data: 2026-10-07
 responsavel: Autor do projeto
 tags:
   - tipo/requisito
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-009 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Associar as memórias aos lugares em que aconteceram.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado fotos com coordenadas, quando abrir o mapa, então cada memória localizada fica acessível por um pin de coração.
-- [ ] **Fronteira** — Dado duas fotos com a mesma coordenada, quando selecionar o ponto, então ambas ficam acessíveis por seleção ou agrupamento.
-- [ ] **Falha** — Dado provedor do mapa indisponível, quando abrir a seção, então um aviso e acesso alternativo às fotos são exibidos.
+- [x] **Sucesso** — Dado fotos com coordenadas, quando abrir o mapa, então cada memória localizada fica acessível por um pin de coração.
+- [x] **Fronteira** — Dado duas fotos com a mesma coordenada, quando selecionar o ponto, então ambas ficam acessíveis por seleção ou agrupamento.
+- [x] **Falha** — Dado provedor do mapa indisponível, quando abrir a seção, então um aviso e acesso alternativo às fotos são exibidos.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Associar as memórias aos lugares em que aconteceram.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: Leaflet posiciona pins reais, agrupa coordenadas idênticas e mantém lista alternativa. QA com tiles bloqueados confirmou aviso localizado e acesso às memórias sem encerrar a sessão.
 - **Objetivo/spec**: [[SPEC-1ANO-004 - Mapa e galeria]].
-- **Tarefa/teste**: `CT-RF-1ANO-009-S`, `CT-RF-1ANO-009-F` e `CT-RF-1ANO-009-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `memory.test.js`, `api.test.js`, `ApiIntegrationTest.paginaGaleriaEPinsSemOmitirItens` e roteiro Playwright da Spec 004.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Associar as memórias aos lugares em que aconteceram.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Mapa real, pins agrupados, lista alternativa e falha localizada implementados e validados | IA |
 
 ## Revisão rápida
 

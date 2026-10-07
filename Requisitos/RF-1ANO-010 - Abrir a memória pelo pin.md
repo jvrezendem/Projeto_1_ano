@@ -1,10 +1,10 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
-data: 2026-10-01
+versao: 1.0
+data: 2026-10-07
 responsavel: Autor do projeto
 tags:
   - tipo/requisito
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-010 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Relembrar o momento sem sair da exploração do mapa.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado pin associado a uma foto, quando selecionar o pin, então o popup apresenta a imagem e os dados da mesma foto.
-- [ ] **Fronteira** — Dado foto sem nome do lugar ou data, quando abrir o popup, então coordenadas e Data não informada substituem os campos ausentes.
-- [ ] **Falha** — Dado falha ao carregar a imagem, quando abrir o popup, então local e data continuam disponíveis com opção de tentar novamente.
+- [x] **Sucesso** — Dado pin associado a uma foto, quando selecionar o pin, então o popup apresenta a imagem e os dados da mesma foto.
+- [x] **Fronteira** — Dado foto sem nome do lugar ou data, quando abrir o popup, então coordenadas e Data não informada substituem os campos ausentes.
+- [x] **Falha** — Dado falha ao carregar a imagem, quando abrir o popup, então local e data continuam disponíveis com opção de tentar novamente.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Relembrar o momento sem sair da exploração do mapa.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: detalhe compartilhado consulta o ID selecionado, formata coordenadas/data ausente, preserva textos após falha da imagem e oferece nova tentativa.
 - **Objetivo/spec**: [[SPEC-1ANO-004 - Mapa e galeria]].
-- **Tarefa/teste**: `CT-RF-1ANO-010-S`, `CT-RF-1ANO-010-F` e `CT-RF-1ANO-010-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `memory.test.js`, testes de contrato da API e roteiro Playwright com pin, lista, galeria, imagens quebradas e pontos coincidentes.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Relembrar o momento sem sair da exploração do mapa.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Detalhe compartilhado, fallbacks e navegação coincidente implementados e validados | IA |
 
 ## Revisão rápida
 

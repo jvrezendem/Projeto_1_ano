@@ -1,10 +1,10 @@
 ---
 tipo: spec-feature
 area: 1Ano
-status: rascunho
+status: implementado
 spec_id: SPEC-1ANO-004
-versao: 0.1
-data: 2026-10-01
+versao: 1.0
+data: 2026-10-07
 responsavel: Autor do projeto
 tags:
   - tipo/spec
@@ -19,9 +19,9 @@ requisitos_relacionados:
 
 # SPEC-1ANO-004 - Mapa e galeria
 
-**Estado:** rascunho para revisão; não representa implementação concluída.
+**Estado:** implementado e validado em 2026-10-07.
 **Origem:** [[00 - Projeto 1Ano#Fontes e limites]].
-**Branch:** não criada; este documento especifica o comportamento.
+**Branch:** `develop`.
 
 ## Relação com os requisitos do vault
 
@@ -35,14 +35,14 @@ requisitos_relacionados:
 
 O mapa é uma visão das fotos localizadas; a galeria é a visão de todas as fotos. Ambos usam os mesmos IDs e dados persistidos. O mapa ilustrativo do protótipo precisará ser substituído por uma implementação geográfica real, capaz de posicionar latitude e longitude.
 
-Preservar a galeria cronológica com **mais antigas primeiro**, conforme a interface atual inspecionada, e o filtro por ano existente. Fotos sem data ficam depois das datadas em um grupo Sem data. O provedor de mapa ainda está em aberto.
+Preservar a galeria cronológica com **mais antigas primeiro**, conforme a interface atual inspecionada, e o filtro por ano existente. Fotos sem data ficam depois das datadas em um grupo Sem data. Foi adotado Leaflet 1.9.4 com tiles do OpenStreetMap, atribuição visível e lista alternativa independente do provedor.
 
 ### Fronteira de responsabilidade
 
 - **Backend:** fornecer apenas fotos com coordenadas válidas para pins; fornecer galeria paginada e detalhes.
 - **Frontend:** posicionar pins, agrupar sobreposições, abrir popup e tratar temas, navegação e falhas.
 - **Provedor de mapa:** mapa base; não deve receber arquivos pessoais, credenciais ou legendas.
-- **Autor:** escolher provedor compatível com orçamento e hospedagem.
+- **Autor:** revisar futuramente o provedor caso volume, orçamento ou política de uso exijam infraestrutura própria.
 
 ## Histórias e testes
 
@@ -122,11 +122,20 @@ Mudanças de dados invalidam as consultas relacionadas. Se uma data corrigida mo
 
 Rotas entre lugares, navegação GPS, localização em tempo real, mapas offline, Street View, compartilhamento público e geocodificação obrigatória.
 
+## Implementação e evidências
+
+- `MemoryMap.jsx` carrega todas as páginas de pins, usa coordenadas reais, agrupa posições idênticas e mantém lista alternativa por teclado e toque.
+- `MemoryDetailDialog.jsx` é compartilhado pelo mapa e pela galeria, carrega o detalhe pelo ID e cobre dados ausentes, imagem indisponível, navegação coincidente, `Escape`, botão de fechar e retorno de foco.
+- `GalleryPage.jsx` consulta anos e páginas no backend, preserva o ano em `#galeria?ano=AAAA`, reinicia a paginação ao filtrar e conserva itens anteriores quando a próxima página falha.
+- O mapa ilustrativo da página Inicial foi substituído pelo mesmo componente geográfico real; sem pins, há estado vazio e nenhum ponto é inventado.
+- O teste frontend confirma 101 pins em duas páginas, agrupamentos e fallbacks. O teste Spring confirma 102 fotos e 101 pins sem omissões, filtro por ano, ordem e `NULLS LAST`.
+- QA renderizado em 1440×900, 390×844 e 844×390 confirmou mapa/lista, filtro, paginação, detalhe coincidente, teclado, foco, falha de tiles, falha da próxima página e imagem quebrada.
+
 ## Questões abertas
 
 | ID | Questão | Responsável | Momento | Bloqueia? |
 |---|---|---|---|---|
-| Q-M01 | Escolher biblioteca e provedor de mapas, avaliando cota, custo e atribuição. | Autor | Antes do mapa real | Integração do mapa |
+| Q-M01 | Resolvida: Leaflet 1.9.4 e OpenStreetMap no MVP, com atribuição e fallback em lista. | IA/Autor | 2026-10-07 | Não |
 | Q-M02 | Definir volume aproximado de fotos para calibrar paginação e miniaturas. | Autor | Antes da avaliação de desempenho | Não bloqueia os contratos iniciais |
 
 ## Checklist antes do planejamento
@@ -134,6 +143,6 @@ Rotas entre lugares, navegação GPS, localização em tempo real, mapas offline
 - [x] Relação entre mapa, foto e galeria definida.
 - [x] Pins coincidentes, dados ausentes e indisponibilidade cobertos.
 - [x] Filtro existente e ordem cronológica preservados.
-- [ ] Provedor de mapa escolhido.
+- [x] Provedor de mapa escolhido.
 
 

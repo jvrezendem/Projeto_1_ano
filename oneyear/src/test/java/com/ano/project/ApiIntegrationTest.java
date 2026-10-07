@@ -21,6 +21,9 @@ import javax.imageio.ImageIO;
 import jakarta.servlet.http.Cookie;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -242,6 +245,44 @@ class ApiIntegrationTest {
 				.contentType("application/json").content("{\"latitude\":-21.0}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.codigo").value("COORDENADAS_INVALIDAS"));
+	}
+
+	@Test
+	void paginaGaleriaEPinsSemOmitirItens() throws Exception {
+		Usuario autor = usuarios.findByLogin(login).orElseThrow();
+		List<Foto> lote = new ArrayList<>();
+		for (int indice = 0; indice < 101; indice++) {
+			Foto foto = novaFoto(autor);
+			foto.setDataCaptura(LocalDate.of(2020, 1, 1).plusDays(indice));
+			foto.setLatitude(BigDecimal.valueOf(-20 + indice * 0.001));
+			foto.setLongitude(BigDecimal.valueOf(-45 + indice * 0.001));
+			lote.add(foto);
+		}
+		lote.add(novaFoto(autor));
+		fotos.saveAll(lote);
+
+		mvc.perform(get("/api/v1/fotos?page=0&size=24").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(102))
+				.andExpect(jsonPath("$.items.length()").value(24))
+				.andExpect(jsonPath("$.hasNext").value(true))
+				.andExpect(jsonPath("$.items[0].dataCaptura").value("2020-01-01"));
+		mvc.perform(get("/api/v1/fotos?page=4&size=24").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.items.length()").value(6))
+				.andExpect(jsonPath("$.items[5].dataCaptura").doesNotExist());
+		mvc.perform(get("/api/v1/fotos?ano=2020&size=100").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(101));
+		mvc.perform(get("/api/v1/fotos/pins?page=0&size=100").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalElements").value(101))
+				.andExpect(jsonPath("$.items.length()").value(100))
+				.andExpect(jsonPath("$.hasNext").value(true));
+		mvc.perform(get("/api/v1/fotos/pins?page=1&size=100").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.items.length()").value(1))
+				.andExpect(jsonPath("$.hasNext").value(false));
 	}
 
 	@Test

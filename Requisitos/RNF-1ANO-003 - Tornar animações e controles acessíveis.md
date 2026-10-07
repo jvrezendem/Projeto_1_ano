@@ -1,10 +1,10 @@
 ---
 tipo: requisito
 area: 1Ano
-status: parcialmente-implementado
+status: implementado
 prioridade: Must
-versao: 0.2
-data: 2026-10-01
+versao: 1.0
+data: 2026-10-07
 responsavel: Autor do projeto
 tags:
   - tipo/requisito
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RNF-1ANO-003 |
 | Tipo | Qualidade |
 | Prioridade | Must |
-| Status | Parcialmente implementado |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Briefing anterior e derivação das animações solicitadas; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado uso somente de teclado, quando abrir menu, escolher foto e fechar popup, então há foco visível e o foco retorna ao acionador.
+- [x] **Sucesso** — Dado uso somente de teclado, quando abrir menu, escolher foto e fechar popup, então há foco visível e o foco retorna ao acionador.
 - [x] **Fronteira** — Dado prefers-reduced-motion ativo, quando rolar a história, então o conteúdo aparece sem parallax ou movimento decorativo contínuo.
-- [ ] **Falha** — Dado animação interrompida ou desativada, quando abrir e fechar um popup, então o conteúdo não fica preso nem inacessível.
+- [x] **Falha** — Dado animação interrompida ou desativada, quando abrir e fechar um popup, então o conteúdo não fica preso nem inacessível.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência**: QA renderizado confirmou foco visível, foco inicial e retorno ao acionador no menu, conteúdo integral com `prefers-reduced-motion` e controle de pausa. Escolha de foto e popup permanecem pendentes das Specs 003/004.
-- **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]].
-- **Tarefa/teste**: `preferences.test.js` e roteiro renderizado da Spec 002 cobrem movimento reduzido e o menu; os cenários completos de foto/popup permanecem reservados para as Specs 003/004.
+- **Evidência**: QA renderizado confirmou foco visível e retorno ao acionador no menu, upload, galeria e detalhe; pin/lista abrem por teclado; `Escape` e botão visível fecham o diálogo; movimento reduzido mantém o conteúdo acessível.
+- **Objetivo/spec**: [[SPEC-1ANO-002 - História e navegação]], [[SPEC-1ANO-003 - Cadastro de fotos e metadados]] e [[SPEC-1ANO-004 - Mapa e galeria]].
+- **Tarefa/teste**: `preferences.test.js` e roteiros Playwright das Specs 002, 003 e 004 cobrem movimento, menu, foto, popup, fechamento e retorno de foco.
 
 ## Questões abertas
 
@@ -65,6 +65,7 @@ Manter a experiência utilizável sem mouse e sem efeitos que impeçam a leitura
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
 | 0.2 | 2026-10-06 | Validação de movimento reduzido e controles existentes; foto e popup permanecem pendentes | IA |
+| 1.0 | 2026-10-07 | Fluxos de foto e popup concluídos com teclado, Escape e retorno de foco | IA |
 
 ## Revisão rápida
 

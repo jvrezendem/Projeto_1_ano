@@ -7,6 +7,8 @@ import Plus from "lucide-react/dist/esm/icons/plus";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import * as api from "../api";
 import Button from "./Button";
+import MemoryDetailDialog from "./MemoryDetailDialog";
+import MemoryMap from "./MemoryMap";
 
 const orientacoesPadrao = [
   { titulo: "Explore a galeria", texto: "Veja as fotos reunidas em um só lugar.", Icon: GalleryVerticalEnd },
@@ -31,6 +33,7 @@ function HistoriaSkeleton() {
 export default function HistoriaPage({ onGallery, onUnauthorized }) {
   const [estado, setEstado] = useState({ dados: null, carregando: true, erro: "" });
   const [imagensFalhas, setImagensFalhas] = useState([]);
+  const [selecao, setSelecao] = useState(null);
 
   const carregar = useCallback(async () => {
     setEstado((anterior) => ({ ...anterior, carregando: !anterior.dados, erro: "" }));
@@ -67,6 +70,8 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
 
   const { frasePrincipal, introducao, secoes = [], dicas = [] } = estado.dados;
   const historiaVazia = !frasePrincipal?.trim() && !introducao?.trim() && secoes.length === 0;
+  const abrirDetalhe = (fotoIds, indice, opener) => setSelecao({ fotoIds, indice, opener });
+  const fecharDetalhe = () => setSelecao(null);
 
   return (
     <article className="story-page">
@@ -146,22 +151,20 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
       <section className="memory-map" aria-labelledby="map-title">
         <div className="section-heading">
           <h2 id="map-title">Mapa das memórias</h2>
-          <p>As memórias com localização serão reunidas aqui.</p>
+          <p>Explore os lugares da história ou use a lista alternativa.</p>
         </div>
-        <div className="map-layout">
-          <div className="map-preview" role="img" aria-label="Espaço reservado para o mapa das memórias">
-            <img src="/login-memories.png" alt="" />
-          </div>
-          <div className="memory-list">
-            <h3>Lista de memórias</h3>
-            <div className="memory-list-empty" role="status">
-              <MapPin size={30} aria-hidden="true" />
-              <p>Nenhuma memória localizada por enquanto.</p>
-              <Button type="button" variant="outline" onClick={onGallery}>Abrir galeria</Button>
-            </div>
-          </div>
-        </div>
+        <MemoryMap compact onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} onGallery={onGallery} />
       </section>
+
+      {selecao ? (
+        <MemoryDetailDialog
+          fotoIds={selecao.fotoIds}
+          indiceInicial={selecao.indice}
+          opener={selecao.opener}
+          onClose={fecharDetalhe}
+          onUnauthorized={onUnauthorized}
+        />
+      ) : null}
     </article>
   );
 }

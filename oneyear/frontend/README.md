@@ -1,8 +1,10 @@
 # Frontend da aplicação ana.
 
-Interface React/Vite da área privada implementada pelas Specs 001, 002 e 003.
+Interface React/Vite da área privada implementada pelas Specs 001, 002, 003 e 004.
 
-Inclui autenticação, história privada, navegação entre Inicial/Galeria/Perfil, temas claro e escuro, controle de movimento, drawer móvel acessível e cadastro de uma foto por vez com prévia, upload e revisão de metadados. Mapa interativo, filtros cronológicos e popup pertencem à Spec 004.
+Inclui autenticação, história privada, navegação entre Inicial/Galeria/Perfil, temas claro e escuro, controle de movimento, drawer móvel acessível, cadastro de fotos, mapa Leaflet com pins de coração, lista alternativa, detalhe compartilhado e galeria cronológica paginada com filtro por ano.
+
+O mapa usa tiles do OpenStreetMap com atribuição visível. O provedor recebe apenas as coordenadas públicas dos tiles solicitados pelo viewport; fotos, legendas, credenciais e dados da API não são enviados. Se os tiles falharem, a lista de memórias e a galeria continuam utilizáveis.
 
 ## Pré-requisitos
 

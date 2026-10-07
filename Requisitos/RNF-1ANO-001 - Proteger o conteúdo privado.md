@@ -1,10 +1,10 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
-data: 2026-10-01
+versao: 1.0
+data: 2026-10-07
 responsavel: Autor do projeto
 tags:
   - tipo/requisito
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RNF-1ANO-001 |
 | Tipo | Qualidade |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Derivado do login e da sensibilidade das fotos; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Impedir acesso às memórias por chamadas diretas fora da interface.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado sessão válida, quando solicitar foto por ID, então o conteúdo é entregue.
-- [ ] **Fronteira** — Dado URL de imagem copiada para um navegador sem sessão, quando abrir a URL, então nenhum conteúdo privado é retornado.
-- [ ] **Falha** — Dado sessão inválida ou expirada, quando consultar perfil ou mapa, então a API retorna 401 sem dados privados.
+- [x] **Sucesso** — Dado sessão válida, quando solicitar foto por ID, então o conteúdo é entregue.
+- [x] **Fronteira** — Dado URL de imagem copiada para um navegador sem sessão, quando abrir a URL, então nenhum conteúdo privado é retornado.
+- [x] **Falha** — Dado sessão inválida ou expirada, quando consultar perfil ou mapa, então a API retorna 401 sem dados privados.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Impedir acesso às memórias por chamadas diretas fora da interface.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: testes Spring negam rotas privadas sem sessão e liberam detalhe/arquivo com autenticação; mapa e galeria retornam ao login em 401. O provedor recebe somente requisições de tiles, nunca arquivos, legendas ou credenciais.
 - **Objetivo/spec**: [[SPEC-1ANO-005 - Backend Spring Boot e contratos REST]].
-- **Tarefa/teste**: `CT-RNF-1ANO-001-S`, `CT-RNF-1ANO-001-F` e `CT-RNF-1ANO-001-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `ApiIntegrationTest` cobre sessão válida, acesso anônimo e arquivos privados; `api.test.js` confirma cookies e `no-store`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Impedir acesso às memórias por chamadas diretas fora da interface.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Proteção das rotas privadas e fronteira com o provedor do mapa verificadas | IA |
 
 ## Revisão rápida
 

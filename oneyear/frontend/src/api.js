@@ -67,8 +67,34 @@ export function obterHistoria() {
   return requisitar("/api/v1/historia");
 }
 
-export function listarFotos({ page = 0, size = 24 } = {}) {
-  return requisitar(`/api/v1/fotos?page=${page}&size=${size}`);
+export function listarFotos({ page = 0, size = 24, ano } = {}) {
+  const parametros = new URLSearchParams({ page, size });
+  if (ano) parametros.set("ano", ano);
+  return requisitar(`/api/v1/fotos?${parametros}`);
+}
+
+export function listarAnos() {
+  return requisitar("/api/v1/fotos/anos");
+}
+
+export function listarPins({ page = 0, size = 100 } = {}) {
+  return requisitar(`/api/v1/fotos/pins?page=${page}&size=${size}`);
+}
+
+export async function listarTodosPins() {
+  const pins = [];
+  let page = 0;
+  let pagina;
+  do {
+    pagina = await listarPins({ page });
+    pins.push(...(pagina.items || []));
+    page += 1;
+  } while (pagina.hasNext);
+  return pins;
+}
+
+export function obterFoto(id) {
+  return requisitar(`/api/v1/fotos/${id}`);
 }
 
 export function cadastrarFoto(arquivo) {

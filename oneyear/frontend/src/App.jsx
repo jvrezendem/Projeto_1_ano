@@ -14,7 +14,7 @@ aplicarPreferencias(preferenciasIniciais);
 
 const lerPagina = () => {
   if (location.hash === "#perfil") return "perfil";
-  if (location.hash === "#galeria") return "galeria";
+  if (location.hash.startsWith("#galeria")) return "galeria";
   return "inicial";
 };
 

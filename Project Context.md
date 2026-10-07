@@ -697,3 +697,179 @@ Capturas finais ficaram fora do repositório em `%TEMP%/oneyear-spec003-qa/`: `g
 - QA renderizado repetido com Playwright temporário e Microsoft Edge headless, pois o plugin Browser não estava disponível. O roteiro autenticado abriu a Galeria, selecionou PNG, confirmou prévia, enviou multipart (201), exibiu revisão com aviso de EXIF ausente, salvou coordenadas/data via PATCH (200), mostrou confirmação e abriu o formulário em 390×844. Não houve erros de console nem `pageerror`.
 - As capturas de QA permaneceram fora do repositório em `%TEMP%/oneyear-spec003-qa/`. O conceito aprovado e as capturas finais foram inspecionados com `view_image`; a diferença de conteúdo visual (foto neutra mockada versus imagens do conceito) é intencional do interceptador de API e não altera o fluxo de controles HTML.
 - Nenhuma credencial, foto pessoal, legenda, data ou coordenada real foi incluída. O diretório `.vscode/` e o `package-lock.json` da raiz já existentes permaneceram intocados.
+
+# Execução da SPEC-1ANO-004 — Mapa e galeria
+
+## Estado, escopo e decisões
+
+- Data da implementação e validação: 2026-10-07.
+- Spec executada: `SPEC-1ANO-004 - Mapa e galeria`, atualizada para `implementado`, versão 1.0.
+- Regras aplicadas: `Regras para IA.md`.
+- Branch usada: `develop`.
+- O mapa ilustrativo da página Inicial foi substituído por um mapa geográfico real e o mesmo componente passou a compor a Galeria.
+- Foi adotado Leaflet 1.9.4 com tiles raster do OpenStreetMap, projeção Web Mercator padrão da biblioteca, atribuição visível e símbolos de coração estáveis em tela.
+- A escolha atende ao volume e à interação do MVP: um mapa por rota, marcadores simples, pan/zoom e detalhe por seleção. MapLibre, Google Maps e stacks GIS/GPU seriam custo desnecessário para este escopo.
+- O provedor recebe somente as requisições `z/x/y` necessárias ao mapa base e o IP inerente à conexão. Fotos, IDs internos, legendas, cookies e credenciais não são enviados ao OpenStreetMap.
+- Rotas, localização atual, geocodificação, mapas offline e compartilhamento público continuam fora do escopo.
+
+## Implementação funcional
+
+### Mapa e pins
+
+- `MemoryMap.jsx` consulta `GET /api/v1/fotos/pins` em páginas de 100 até `hasNext=false`; nenhuma página é confundida com a coleção inteira.
+- Somente fotos com coordenadas retornadas pelo backend geram pins. O estado vazio não cria pontos ilustrativos.
+- Coordenadas idênticas são agrupadas em um coração com contador; o detalhe oferece anterior/próxima e a lista alternativa enumera cada memória individualmente.
+- O mapa pode ser operado por clique, toque ou teclado. Marcadores recebem papel/nome acessível e respondem a Enter/Espaço.
+- Em ponteiro grosso, o arraste de um dedo é desativado para preservar a rolagem da página; zoom explícito e pinça permanecem disponíveis.
+- A lista alternativa permanece ao lado do mapa no desktop e abaixo dele no celular, sem depender dos tiles.
+- Falha de tile ou tempo de espera superior a oito segundos mostra aviso localizado e ação de nova tentativa. A galeria, a lista e a sessão permanecem disponíveis.
+- O bundle do Leaflet é carregado dinamicamente quando há pins; a página sem coordenadas exibe diretamente o estado vazio.
+
+### Detalhe compartilhado
+
+- `MemoryDetailDialog.jsx` é usado tanto pelo mapa quanto pela grade e consulta `GET /api/v1/fotos/{id}` para garantir o mesmo ID e conteúdo.
+- O detalhe mostra imagem, legenda quando existente, lugar e data. Lugar ausente usa coordenadas com cinco casas; data ausente usa “Data não informada”.
+- Se a imagem falhar, lugar e data permanecem visíveis com placeholder e opção de tentar novamente.
+- O diálogo nativo fecha por `Escape` ou botão visível e devolve o foco ao pin, item da lista ou card que o abriu.
+- Desktop usa painel lateral; celular em retrato usa bottom sheet; celular em paisagem usa painel lateral direito.
+
+### Galeria cronológica
+
+- `GalleryPage.jsx` consulta em paralelo a lista completa de anos e a primeira página da coleção.
+- O backend mantém a ordem `dataCaptura ASC NULLS LAST`, `criadoEm ASC`, `id ASC`; o frontend preserva essa ordem e cria grupos por ano, encerrando com “Sem data”.
+- O filtro é aplicado no backend e preservado em `#galeria?ano=AAAA`. Alterar o ano limpa a página anterior e reinicia em zero; “Todos” inclui as fotos sem data.
+- “Carregar mais” acrescenta a próxima página às já exibidas. Se a chamada falhar, os cards existentes permanecem e o botão vira uma tentativa explícita.
+- Uma foto sem GPS continua na galeria; apenas a visão do mapa a omite.
+- Upload e correção de dados invalidam lista, anos e pins, evitando posição cronológica ou geográfica desatualizada.
+- `App.jsx` passou a reconhecer `#galeria` também quando a URL contém o filtro.
+
+## Arquivos adicionados e alterados
+
+Frontend adicionado:
+
+- `src/components/MemoryMap.jsx`;
+- `src/components/MemoryDetailDialog.jsx`;
+- `src/memory.js`;
+- `test/memory.test.js`;
+- `design-references/spec004-mapa-galeria-desktop.png`;
+- `design-references/spec004-mapa-galeria-mobile.png`;
+- `design-references/spec004-mapa-galeria-landscape.png`.
+
+Frontend alterado:
+
+- `package.json` e `package-lock.json`: Leaflet 1.9.4;
+- `src/api.js`: anos, filtro, pins paginados, agregação de todas as páginas e detalhe por ID;
+- `src/App.jsx`: rota de galeria com query no hash;
+- `src/components/GalleryPage.jsx`: mapa, filtro, grupos, paginação, detalhe e invalidação;
+- `src/components/HistoriaPage.jsx`: mapa real no lugar do protótipo;
+- `src/styles.css`: layout do mapa, hearts, lista, galeria, diálogo, falhas e três estados responsivos;
+- `test/api.test.js`: filtro, anos, detalhe e mais de 100 pins;
+- `README.md`: escopo concluído, provedor e fronteira de privacidade.
+
+Backend alterado somente em teste:
+
+- `ApiIntegrationTest.java`: cenário com 102 fotos e 101 pins, cobrindo cinco páginas da galeria, duas páginas de pins, filtro por ano, ordem e foto sem data no final.
+
+Documentação alterada:
+
+- Spec 004;
+- requisitos `RF-1ANO-009`, `RF-1ANO-010`, `RF-1ANO-011`, `RNF-1ANO-001` e `RNF-1ANO-003`;
+- este `Project Context.md`.
+
+Não foi necessária migration, alteração de entidade ou mudança de contrato REST: a Spec 005 já havia entregue os endpoints e a ordenação necessários.
+
+## Direção visual e conceitos
+
+Foram usados três conceitos produzidos anteriormente no modo integrado do ImageGen para esta mesma Spec e reinspecionados antes da implementação. Arquivos finais versionados:
+
+- `oneyear/frontend/design-references/spec004-mapa-galeria-desktop.png`;
+- `oneyear/frontend/design-references/spec004-mapa-galeria-mobile.png`;
+- `oneyear/frontend/design-references/spec004-mapa-galeria-landscape.png`.
+
+Prompt final normalizado: `Use case: ui-mockup. Asset: referências desktop 1440×900, mobile 390×844 e landscape 844×390 da área privada ana. Criar Galeria com sidebar existente, mapa geográfico neutro, pins de coração, lista alternativa, filtro por ano, grupos cronológicos e detalhe somente leitura compartilhado. Preservar branco real, azul-marinho, azul de ação, vermelho de destaque, Geist, bordas finas e sombras discretas. Não usar gradientes, pills decorativos, dados pessoais, edição/exclusão no detalhe nem enviar conteúdo privado ao provedor.`
+
+### Registro de fidelidade visual
+
+| Ponto comparado | Resultado final |
+|---|---|
+| Estrutura desktop | Sidebar fixa, cabeçalho editorial, mapa/lista em painel único, coleção abaixo e detalhe lateral preservados. |
+| Hierarquia | “Galeria”, “Mapa das memórias”, “Memórias no mapa” e “Fotos” mantêm a leitura e as escalas do conceito. |
+| Paleta | Branco, navy, azul e coração vermelho seguem os tokens existentes, inclusive no tema escuro. |
+| Mapa | Leaflet substitui o substrato ilustrado por tiles reais; controles, atribuição, pins e contador permanecem legíveis. |
+| Galeria | Grade fluida, filtro à direita no desktop e grupos cronológicos reproduzem a composição sem inventar conteúdo. |
+| Detalhe desktop | Painel lateral de leitura com imagem, legenda, local, data, fechar e stepper coincidente segue o conceito corrigido. |
+| Mobile retrato | Visualização principal precede controles secundários; detalhe ocupa bottom sheet com alvos de toque amplos. |
+| Mobile paisagem | Detalhe ocupa o painel direito e mantém mapa visível, conforme o conceito específico de landscape. |
+| Falhas | Erro de tiles aparece dentro do mapa, imagem quebrada não remove metadados e erro de página não apaga cards. |
+| Conteúdo dinâmico | Fotos, datas, lugares, quantidade de pins e extensão dos grupos variam intencionalmente conforme a API. |
+
+A composição móvel final usa duas colunas de fotos, em vez das três miniaturas sem texto do conceito, para manter legenda e metadados legíveis. Os tiles usados na captura de fidelidade foram um stub cartográfico neutro; a aplicação de produção aponta para o OpenStreetMap. A cópia acima da dobra manteve os textos do conceito (“Galeria”, subtítulo, “Adicionar foto”, “Mapa das memórias”, “Memórias no mapa” e “Fotos”) e acrescentou apenas instruções funcionais para o mapa e a ordem cronológica.
+
+## Verificações automatizadas
+
+### Frontend
+
+```text
+npm run lint  -> aprovado
+npm test      -> 15 testes aprovados, 0 falhas
+npm run build -> aprovado com Vite 7.3.7
+```
+
+Os novos testes cobrem query de ano no backend, lista completa de anos, detalhe por ID, 101 pins divididos em duas páginas, data/coordenadas, grupo “Sem data” e coordenadas coincidentes. O Leaflet foi separado em chunk próprio no build.
+
+### Backend
+
+```text
+mvn test
+Tests run: 21, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+O novo teste de integração prova 102 fotos, 101 pins, páginas completas, filtro de 2020 e item sem data após os datados. O aviso informativo do Mockito sobre carregamento dinâmico futuro permanece sem impacto no Java 21.
+
+## QA renderizado
+
+O plugin Browser não estava disponível nesta sessão. Foi usado Playwright temporário com Microsoft Edge headless; Playwright não foi incluído no `package.json` ou no lockfile. A API e imagens foram interceptadas apenas para QA com dados neutros, enquanto os contratos reais foram cobertos pelos testes Spring. Tiles neutros foram simulados na captura de sucesso e bloqueados de propósito no cenário de falha.
+
+Fluxo principal validado em `http://127.0.0.1:5173/#galeria`:
+
+1. identidade, título e conteúdo real da página;
+2. 24 cards iniciais e 26 após “Carregar mais”;
+3. grupo “Sem data” ao final;
+4. filtro 2021 com dez cards e URL `#galeria?ano=2021`;
+5. duas memórias na mesma coordenada, com indicador `1 de 2` e stepper;
+6. abertura por lista e por pin usando Enter;
+7. fechamento com `Escape` e foco devolvido ao acionador;
+8. bottom sheet em 390×844 e painel direito em 844×390;
+9. ausência de overflow horizontal nos três viewports;
+10. nenhuma exceção, overlay do Vite ou erro inesperado de console no fluxo nominal.
+
+Estados adicionais validados:
+
+- tiles bloqueados exibem aviso local enquanto a lista permanece selecionável;
+- erro HTTP 500 na segunda página preserva os 24 cards já carregados e permite repetir;
+- arquivo de imagem bloqueado mantém local/data e expõe “Tentar novamente”;
+- a página Inicial contém o mapa Leaflet real;
+- uma resposta sem pins exibe o estado vazio com zero marcadores inventados.
+
+Capturas ficaram fora do repositório em `%TEMP%/oneyear-spec004-qa/`: `galeria-desktop-1440.png`, `detalhe-desktop-1440.png`, `detalhe-mobile-390.png`, `detalhe-landscape-844.png` e `falha-mapa-desktop.png`. Conceitos e capturas finais foram abertos com inspeção de imagem após o ajuste de CSS.
+
+## Matriz dos critérios da Spec 004
+
+| Critério | Evidência | Estado |
+|---|---|---|
+| Pins em coordenadas reais e vazio sem pins inventados | Leaflet, teste da página Inicial e estado vazio renderizado. | Atendido |
+| Fotos coincidentes continuam acessíveis | Grupo, contador, lista e stepper `1 de 2` exercitados. | Atendido |
+| Detalhe mantém ID, lugar, data e fallbacks | Componente compartilhado, testes puros e QA de imagem quebrada. | Atendido |
+| Galeria inclui fotos sem GPS e sem data | Contrato backend, grupo “Sem data” e grade independente dos pins. | Atendido |
+| Mais de 24 fotos e mais de 100 pins sem omissão | 26 fotos no QA, 102/101 itens no teste Spring e 101 pins no teste frontend. | Atendido |
+| Filtro consulta coleção completa e persiste na URL | Query backend, lista de anos e `#galeria?ano=2021` verificados. | Atendido |
+| Falha do mapa não derruba memórias ou sessão | Tiles bloqueados com aviso local e lista utilizável. | Atendido |
+| Teclado, Escape, foco e touch/responsividade | Playwright em desktop, portrait e landscape. | Atendido |
+
+## Pendências externas e continuidade
+
+- A execução não usou Neon/PostgreSQL, Object Storage ou fotos reais porque depende de credenciais e serviços externos; nenhum segredo ou conteúdo pessoal foi lido ou registrado.
+- O acesso real aos tiles do OpenStreetMap não estava disponível de forma confiável no ambiente de QA. O caminho nominal foi validado com tiles neutros interceptados e o caminho de indisponibilidade com requests abortados.
+- Antes de publicar com tráfego relevante, o autor deve revisar a política de uso do provedor de tiles, estimar o volume e, se necessário, contratar ou hospedar um serviço compatível. A questão de volume Q-M02 permanece aberta sem bloquear o MVP.
+- O diretório `.vscode/` e o `package-lock.json` da raiz, já existentes e não relacionados, permaneceram intocados.

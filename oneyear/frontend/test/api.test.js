@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { atualizarFoto, cadastrarFoto, entrar, listarFotos, obterHistoria, obterPerfil, sair, urlDaApi } from "../src/api.js";
+import {
+  atualizarFoto,
+  cadastrarFoto,
+  entrar,
+  listarAnos,
+  listarFotos,
+  listarTodosPins,
+  obterFoto,
+  obterHistoria,
+  obterPerfil,
+  sair,
+  urlDaApi,
+} from "../src/api.js";
 
 const originalFetch = global.fetch;
 
@@ -98,4 +110,43 @@ test("lista, envia o arquivo original e atualiza os metadados da foto", async ()
   assert.equal(chamadas[2].opcoes.headers["X-CSRF-TOKEN"], "fotos");
   assert.equal(chamadas[3].opcoes.method, "PATCH");
   assert.deepEqual(JSON.parse(chamadas[3].opcoes.body), { legenda: "Memória", latitude: null, longitude: null });
+});
+
+test("aplica o filtro de ano no backend e consulta anos e detalhe", async () => {
+  const chamadas = [];
+  const respostas = [
+    response(200, { items: [], page: 0, hasNext: false }),
+    response(200, [2022, 2024]),
+    response(200, { id: "foto-1" }),
+  ];
+  global.fetch = async (url, opcoes) => {
+    chamadas.push({ url, opcoes });
+    return respostas.shift();
+  };
+
+  await listarFotos({ ano: 2024 });
+  assert.deepEqual(await listarAnos(), [2022, 2024]);
+  assert.equal((await obterFoto("foto-1")).id, "foto-1");
+
+  assert.equal(chamadas[0].url, "/api/v1/fotos?page=0&size=24&ano=2024");
+  assert.equal(chamadas[1].url, "/api/v1/fotos/anos");
+  assert.equal(chamadas[2].url, "/api/v1/fotos/foto-1");
+});
+
+test("carrega todas as páginas de pins sem omitir coleções maiores que cem", async () => {
+  const chamadas = [];
+  const primeiraPagina = Array.from({ length: 100 }, (_, indice) => ({ fotoId: `foto-${indice}` }));
+  global.fetch = async (url, opcoes) => {
+    chamadas.push({ url, opcoes });
+    return url.includes("page=0")
+      ? response(200, { items: primeiraPagina, page: 0, hasNext: true })
+      : response(200, { items: [{ fotoId: "foto-100" }], page: 1, hasNext: false });
+  };
+
+  const pins = await listarTodosPins();
+
+  assert.equal(pins.length, 101);
+  assert.equal(pins.at(-1).fotoId, "foto-100");
+  assert.equal(chamadas[0].url, "/api/v1/fotos/pins?page=0&size=100");
+  assert.equal(chamadas[1].url, "/api/v1/fotos/pins?page=1&size=100");
 });
