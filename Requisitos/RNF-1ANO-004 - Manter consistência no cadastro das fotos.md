@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RNF-1ANO-004 |
 | Tipo | Qualidade |
 | Prioridade | Must — proposta para o MVP |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Derivado da persistência de arquivo e metadados; proposta; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Evitar memórias sem arquivo e resíduos silenciosos no armazenamento.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado arquivo e metadados persistidos, quando concluir o upload, então uma única memória completa fica visível.
-- [ ] **Fronteira** — Dado EXIF ausente com imagem válida, quando concluir o upload, então a foto permanece válida com metadados desconhecidos.
-- [ ] **Falha** — Dado armazenamento ou banco falhar, quando concluir o upload, então nenhuma foto parcial fica visível e resíduos são removidos ou registrados para limpeza.
+- [x] **Sucesso** — Dado arquivo e metadados persistidos, quando concluir o upload, então uma única memória completa fica visível.
+- [x] **Fronteira** — Dado EXIF ausente com imagem válida, quando concluir o upload, então a foto permanece válida com metadados desconhecidos.
+- [x] **Falha** — Dado armazenamento ou banco falhar, quando concluir o upload, então nenhuma foto parcial fica visível e resíduos são removidos ou registrados para limpeza.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Evitar memórias sem arquivo e resíduos silenciosos no armazenamento.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: testes do serviço impedem gravação no banco quando o storage falha, removem o arquivo quando o banco falha e reconciliam órfão com mais de 24 horas; integração confirma o caminho completo e a ausência segura de EXIF.
 - **Objetivo/spec**: [[SPEC-1ANO-003 - Cadastro de fotos e metadados]].
-- **Tarefa/teste**: `CT-RNF-1ANO-004-S`, `CT-RNF-1ANO-004-F` e `CT-RNF-1ANO-004-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `FotoServiceTest`, `ReconciliacaoServiceTest`, `MetadadosServiceTest` e `ApiIntegrationTest` cobrem `CT-RNF-1ANO-004-S`, `CT-RNF-1ANO-004-F` e `CT-RNF-1ANO-004-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Evitar memórias sem arquivo e resíduos silenciosos no armazenamento.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Consistência, compensação e reconciliação implementadas e validadas | IA |
 
 ## Revisão rápida
 

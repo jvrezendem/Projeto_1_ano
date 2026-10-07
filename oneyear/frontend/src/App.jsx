@@ -172,7 +172,7 @@ export default function App() {
       />
       <main className="app-content" id="conteudo" tabIndex="-1">
         {pagina === "perfil" ? <ProfilePage key={sessao.perfil.id} perfil={sessao.perfil} /> : null}
-        {pagina === "galeria" ? <GalleryPage /> : null}
+        {pagina === "galeria" ? <GalleryPage onUnauthorized={voltarAoLogin} /> : null}
         {pagina === "inicial" ? (
           <HistoriaPage onGallery={() => navegar("galeria")} onUnauthorized={voltarAoLogin} />
         ) : null}

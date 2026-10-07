@@ -1,8 +1,8 @@
 # Frontend da aplicação ana.
 
-Interface React/Vite da área privada implementada pelas Specs 001 e 002.
+Interface React/Vite da área privada implementada pelas Specs 001, 002 e 003.
 
-Inclui autenticação, história privada, navegação entre Inicial/Galeria/Perfil, temas claro e escuro, controle de movimento e drawer móvel acessível. A Galeria é uma superfície preparatória; upload, mapa interativo e popup pertencem às Specs 003/004.
+Inclui autenticação, história privada, navegação entre Inicial/Galeria/Perfil, temas claro e escuro, controle de movimento, drawer móvel acessível e cadastro de uma foto por vez com prévia, upload e revisão de metadados. Mapa interativo, filtros cronológicos e popup pertencem à Spec 004.
 
 ## Pré-requisitos
 
@@ -31,4 +31,4 @@ npm test
 npm run build
 ```
 
-As credenciais, os nomes, a história e os demais dados pessoais não ficam no bundle. Eles são provisionados no backend por configuração privada e o perfil e a história autenticados são obtidos pela API.
+As credenciais, os nomes, a história, as fotos e os demais dados pessoais não ficam no bundle. Eles são provisionados ou consultados pelo backend privado; a prévia do arquivo selecionado usa apenas uma URL local temporária do navegador.

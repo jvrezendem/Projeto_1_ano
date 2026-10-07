@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RN-1ANO-002 |
 | Tipo | Regra |
 | Prioridade | Must — proposta para o MVP |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Suposição proposta a partir do uso pelo casal; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Evitar álbuns isolados em um presente sobre a história compartilhada.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado foto cadastrada pela primeira conta, quando a segunda conta abrir a galeria, então a foto está disponível.
-- [ ] **Fronteira** — Dado foto da primeira conta, quando a segunda corrigir os metadados, então a alteração é refletida na coleção comum.
-- [ ] **Falha** — Dado solicitação sem autenticação, quando consultar a coleção, então o acesso é negado.
+- [x] **Sucesso** — Dado foto cadastrada pela primeira conta, quando a segunda conta abrir a galeria, então a foto está disponível.
+- [x] **Fronteira** — Dado foto da primeira conta, quando a segunda corrigir os metadados, então a alteração é refletida na coleção comum.
+- [x] **Falha** — Dado solicitação sem autenticação, quando consultar a coleção, então o acesso é negado.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Evitar álbuns isolados em um presente sobre a história compartilhada.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: teste de integração cadastra pela primeira conta, lista e corrige pela segunda, confirma a versão comum pela primeira e exige autenticação na coleção.
 - **Objetivo/spec**: [[SPEC-1ANO-003 - Cadastro de fotos e metadados]].
-- **Tarefa/teste**: `CT-RN-1ANO-002-S`, `CT-RN-1ANO-002-F` e `CT-RN-1ANO-002-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `ApiIntegrationTest` cobre `CT-RN-1ANO-002-S`, `CT-RN-1ANO-002-F` e `CT-RN-1ANO-002-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Evitar álbuns isolados em um presente sobre a história compartilhada.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Política compartilhada implementada e validada | IA |
 
 ## Revisão rápida
 

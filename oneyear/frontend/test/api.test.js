@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { entrar, obterHistoria, obterPerfil, sair, urlDaApi } from "../src/api.js";
+import { atualizarFoto, cadastrarFoto, entrar, listarFotos, obterHistoria, obterPerfil, sair, urlDaApi } from "../src/api.js";
 
 const originalFetch = global.fetch;
 
@@ -70,4 +70,32 @@ test("obterHistoria consulta o conteúdo privado sem usar cache", async () => {
   assert.equal(chamadas[0].url, "/api/v1/historia");
   assert.equal(chamadas[0].opcoes.cache, "no-store");
   assert.equal(chamadas[0].opcoes.credentials, "include");
+});
+
+test("lista, envia o arquivo original e atualiza os metadados da foto", async () => {
+  const chamadas = [];
+  const respostas = [
+    response(200, { items: [], totalElements: 0 }),
+    response(200, { token: "fotos", headerName: "X-CSRF-TOKEN" }),
+    response(201, { id: "foto-1", avisos: [] }),
+    response(200, { id: "foto-1", legenda: "Memória" }),
+  ];
+  global.fetch = async (url, opcoes) => {
+    chamadas.push({ url, opcoes });
+    return respostas.shift();
+  };
+
+  await listarFotos();
+  const arquivo = new File([new Uint8Array([1, 2, 3])], "foto.png", { type: "image/png" });
+  await cadastrarFoto(arquivo);
+  await atualizarFoto("foto-1", { legenda: "Memória", latitude: null, longitude: null });
+
+  assert.equal(chamadas[0].url, "/api/v1/fotos?page=0&size=24");
+  assert.equal(chamadas[2].opcoes.method, "POST");
+  assert.ok(chamadas[2].opcoes.body instanceof FormData);
+  assert.equal(chamadas[2].opcoes.body.get("file").name, "foto.png");
+  assert.equal(chamadas[2].opcoes.headers["Content-Type"], undefined);
+  assert.equal(chamadas[2].opcoes.headers["X-CSRF-TOKEN"], "fotos");
+  assert.equal(chamadas[3].opcoes.method, "PATCH");
+  assert.deepEqual(JSON.parse(chamadas[3].opcoes.body), { legenda: "Memória", latitude: null, longitude: null });
 });

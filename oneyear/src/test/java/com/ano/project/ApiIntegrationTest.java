@@ -21,6 +21,7 @@ import javax.imageio.ImageIO;
 import jakarta.servlet.http.Cookie;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,6 +98,8 @@ class ApiIntegrationTest {
 				.andExpect(jsonPath("$.headerName").value("X-CSRF-TOKEN"));
 		mvc.perform(post("/api/v1/auth/logout").with(csrf()))
 				.andExpect(status().isNoContent());
+		mvc.perform(get("/api/v1/fotos"))
+				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -178,6 +181,9 @@ class ApiIntegrationTest {
 		mvc.perform(get("/api/v1/fotos").with(user(login)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalElements").value(1));
+		mvc.perform(get("/api/v1/fotos").with(user(segundoLogin)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.items[0].id").value(id.toString()));
 		mvc.perform(get("/api/v1/fotos/anos").with(user(login)))
 				.andExpect(status().isOk()).andExpect(content().json("[]"));
 		mvc.perform(get("/api/v1/fotos/pins").with(user(login)))
@@ -193,11 +199,26 @@ class ApiIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.origemLocalizacao").value("MANUAL"))
 				.andExpect(jsonPath("$.origemData").value("MANUAL"));
+		mvc.perform(patch("/api/v1/fotos/{id}", id).with(user(segundoLogin)).with(csrf())
+				.contentType("application/json")
+				.content("{\"lugar\":\"Limite\",\"latitude\":-90,\"longitude\":180}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.lugar").value("Limite"))
+				.andExpect(jsonPath("$.latitude").value(-90))
+				.andExpect(jsonPath("$.longitude").value(180));
+		mvc.perform(patch("/api/v1/fotos/{id}", id).with(user(login)).with(csrf())
+				.contentType("application/json")
+				.content("{\"latitude\":91,\"longitude\":0}"))
+				.andExpect(status().isBadRequest());
+		mvc.perform(get("/api/v1/fotos/{id}", id).with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.latitude").value(-90))
+				.andExpect(jsonPath("$.longitude").value(180));
 		mvc.perform(patch("/api/v1/fotos/{id}", id).with(user(login)).with(csrf())
 				.contentType("application/json").content("{\"legenda\":null}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.legenda").doesNotExist())
-				.andExpect(jsonPath("$.latitude").value(-21.23));
+				.andExpect(jsonPath("$.latitude").value(-90));
 
 		mvc.perform(get("/api/v1/fotos/pins").with(user(login)))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
@@ -223,11 +244,45 @@ class ApiIntegrationTest {
 				.andExpect(jsonPath("$.codigo").value("COORDENADAS_INVALIDAS"));
 	}
 
+	@Test
+	void aceitaArquivoExatamenteNoLimite() throws Exception {
+		byte[] arquivoNoLimite = Arrays.copyOf(png(), 15 * 1024 * 1024);
+		MockMultipartFile arquivo = new MockMultipartFile("file", "limite.png", "image/png", arquivoNoLimite);
+		mvc.perform(multipart("/api/v1/fotos").file(arquivo).with(user(login)).with(csrf()))
+				.andExpect(status().isCreated());
+		org.junit.jupiter.api.Assertions.assertEquals(15 * 1024 * 1024, fotos.findAll().getFirst().getTamanho());
+	}
+
+	@Test
+	void aceitaJpegLegivelComExifInvalidoEInformaAviso() throws Exception {
+		byte[] jpeg = jpegComExifInvalido();
+		MockMultipartFile arquivo = new MockMultipartFile("file", "memoria.jpg", "image/jpeg", jpeg);
+		mvc.perform(multipart("/api/v1/fotos").file(arquivo).with(user(login)).with(csrf()))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.contentType").value("image/jpeg"))
+				.andExpect(jsonPath("$.avisos[0]").exists())
+				.andExpect(jsonPath("$.dataCaptura").doesNotExist());
+	}
+
 	private byte[] png() throws Exception {
 		BufferedImage imagem = new BufferedImage(2, 3, BufferedImage.TYPE_INT_RGB);
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ImageIO.write(imagem, "png", output);
 		return output.toByteArray();
+	}
+
+	private byte[] jpegComExifInvalido() throws Exception {
+		ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+		ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "jpeg", jpeg);
+		byte[] original = jpeg.toByteArray();
+		byte[] exif = {0x45, 0x78, 0x69, 0x66, 0, 0, 0x49, 0x49, 0x2a, 0, 8, 0, 0, 0, 1};
+		ByteArrayOutputStream resultado = new ByteArrayOutputStream();
+		resultado.write(original, 0, 2);
+		resultado.write(0xff); resultado.write(0xe1);
+		resultado.write(0); resultado.write(exif.length + 2);
+		resultado.write(exif);
+		resultado.write(original, 2, original.length - 2);
+		return resultado.toByteArray();
 	}
 
 	private Foto novaFoto(Usuario autor) {

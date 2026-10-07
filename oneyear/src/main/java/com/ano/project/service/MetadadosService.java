@@ -3,6 +3,7 @@ package com.ano.project.service;
 import com.ano.project.database.models.Foto;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.lang.GeoLocation;
+import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
@@ -41,6 +42,11 @@ public class MetadadosService {
 		List<String> avisos = new ArrayList<>();
 		try {
 			Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
+			for (Directory diretorio : metadata.getDirectories()) {
+				if (!diretorio.hasErrors()) continue;
+				avisos.add("Alguns metadados da imagem estão inválidos e foram ignorados.");
+				break;
+			}
 			BigDecimal[] coordenadas = extrairCoordenadas(metadata, avisos);
 			DataCaptura captura = extrairData(metadata, avisos);
 			return new Metadados(coordenadas[0], coordenadas[1], captura.data(), captura.hora(),

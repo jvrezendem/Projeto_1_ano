@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-008 |
 | Tipo | Funcional |
 | Prioridade | Must — proposta para o MVP |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Derivado da ausência possível de EXIF; proposta; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Tornar utilizáveis fotos recebidas por aplicativos que removem metadados.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado foto sem localização, quando salvar coordenadas válidas e nome do lugar, então a foto passa a ter localização para o mapa.
-- [ ] **Fronteira** — Dado latitude -90 e longitude 180, quando salvar a localização, então os limites válidos são aceitos.
-- [ ] **Falha** — Dado latitude fora do intervalo ou coordenada sem seu par, quando salvar, então a API rejeita os dados e preserva a versão anterior.
+- [x] **Sucesso** — Dado foto sem localização, quando salvar coordenadas válidas e nome do lugar, então a foto passa a ter localização para o mapa.
+- [x] **Fronteira** — Dado latitude -90 e longitude 180, quando salvar a localização, então os limites válidos são aceitos.
+- [x] **Falha** — Dado latitude fora do intervalo ou coordenada sem seu par, quando salvar, então a API rejeita os dados e preserva a versão anterior.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Tornar utilizáveis fotos recebidas por aplicativos que removem metadados.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: API e formulário aceitam correção manual e limites inclusivos, exigem o par de coordenadas e preservam `-90/180` após tentativa inválida; o pin passa a ser listado.
 - **Objetivo/spec**: [[SPEC-1ANO-003 - Cadastro de fotos e metadados]].
-- **Tarefa/teste**: `CT-RF-1ANO-008-S`, `CT-RF-1ANO-008-F` e `CT-RF-1ANO-008-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `ApiIntegrationTest`, `photoForm.test.js` e QA da Spec 003 cobrem `CT-RF-1ANO-008-S`, `CT-RF-1ANO-008-F` e `CT-RF-1ANO-008-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Tornar utilizáveis fotos recebidas por aplicativos que removem metadados.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Implementação e validação dos três cenários de aceite | IA |
 
 ## Revisão rápida
 

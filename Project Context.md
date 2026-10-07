@@ -528,3 +528,172 @@ Capturas de QA ficaram fora do repositório em `%TEMP%/oneyear-spec002-qa/`: `hi
 - A validação visual usou conteúdo neutro interceptado; nenhum dado da conta real, do Neon ou do armazenamento foi lido ou copiado para imagens, testes ou documentação.
 - A integração ao Neon e ao Object Storage reais continua dependente das credenciais e dados externos já registrados anteriormente.
 - `RNF-1ANO-002` e `RNF-1ANO-003` foram marcados como parcialmente implementados porque seus critérios também abrangem formulário de upload, seleção de foto e popup, componentes que serão entregues pelas Specs 003/004.
+
+# Execução da SPEC-1ANO-003 — Cadastro de fotos e metadados
+
+## Estado e escopo
+
+- Data da implementação e validação: 2026-10-07.
+- Spec executada: `SPEC-1ANO-003 - Cadastro de fotos e metadados`, atualizada para `implementado`, versão 1.0.
+- Regras aplicadas: `Regras para IA.md`.
+- Branch usada: `develop`.
+- Foram confirmadas as decisões do MVP: um JPEG ou PNG por envio, até 15 MiB e 40 milhões de pixels, coleção compartilhada, complementação manual e armazenamento privado no Neon Object Storage com registros no PostgreSQL.
+- O backend da Spec 005 já possuía o núcleo de upload, extração, persistência, compensação e reconciliação. Esta execução conectou o fluxo completo ao frontend, ampliou a sinalização de EXIF inválido e fechou os cenários de teste que faltavam.
+- Upload em lote, HEIC/HEIF, vídeos, corte/edição, exclusão, filtros cronológicos completos, mapa e popup continuam fora desta spec.
+- Nenhuma foto, legenda, data, coordenada, lugar ou outro fato pessoal foi inventado ou incluído no bundle.
+
+## Fluxo implementado no frontend
+
+- A página Galeria consulta `GET /api/v1/fotos` após autenticação e apresenta carregamento, coleção, vazio, erro com nova tentativa e fallback de imagem indisponível.
+- “Adicionar foto” abre um diálogo lateral nativo e acessível. O foco permanece no modal, `Escape` fecha quando não há operação em andamento e o foco retorna ao botão acionador.
+- O seletor aceita um único JPEG ou PNG, valida tipo e limite inclusivo de 15 MiB e cria uma URL local temporária apenas para a prévia. A URL é revogada quando deixa de ser necessária.
+- O arquivo original é enviado por `FormData` para preservar EXIF; o frontend não define manualmente o `Content-Type` multipart e envia o token CSRF obtido da API.
+- Após HTTP 201, o formulário de revisão recebe legenda, lugar, latitude, longitude e data existentes, além das origens `EXIF`, `MANUAL` ou `AUSENTE` e avisos retornados pelo backend.
+- Legenda e lugar respeitam 500 e 120 caracteres. Latitude e longitude precisam ser informadas juntas e respeitam os intervalos inclusivos `[-90, 90]` e `[-180, 180]`.
+- Ao salvar, `PATCH /api/v1/fotos/{id}` registra as correções e atualiza imediatamente a grade local. A conclusão confirma que a memória entrou na coleção compartilhada.
+- Após um upload já confirmado, a ação secundária é “Concluir depois”, não “Cancelar”, porque a Spec 003 não possui exclusão e fechar não pode sugerir que o arquivo persistido será removido.
+- Se a resposta do upload não chegar, o frontend não repete o POST automaticamente: consulta a galeria e orienta o usuário a conferir a coleção antes de tentar novamente.
+- Uma resposta 401 em listagem, upload ou correção limpa a área privada e retorna ao login.
+
+## Backend, metadados e consistência
+
+- O backend continua validando assinatura real do arquivo, e não extensão ou `Content-Type` informado pelo cliente.
+- JPEG e PNG são decodificados antes da persistência, e as dimensões são verificadas antes da leitura completa para limitar o custo do decoder.
+- `MetadadosService` converte GPS sul/oeste em valores negativos, extrai `DateTimeOriginal` e preserva offset ausente como `null`.
+- Diretórios EXIF que contêm erros agora geram o aviso “Alguns metadados da imagem estão inválidos e foram ignorados.”, mesmo quando a biblioteca consegue continuar lendo a imagem.
+- EXIF ausente ou inválido não impede o cadastro de uma imagem decodificável; localização e data permanecem desconhecidas e independentes.
+- Correções manuais substituem apenas os campos informados, registram origem `MANUAL` e não tratam data de upload como data da memória.
+- O arquivo é gravado antes do registro; falha do banco dispara remoção compensatória. Falha do storage não grava o banco, e a reconciliação remove arquivos órfãos com mais de 24 horas.
+- A coleção não é filtrada por autor: qualquer uma das duas contas pode listar e corrigir a mesma foto, enquanto solicitações anônimas recebem 401.
+
+## Direção visual e conceitos
+
+O fluxo visual foi definido antes da implementação com ImageGen, usando os conceitos das Specs 001/002 como referências de estilo. Os arquivos finais foram salvos em:
+
+- `oneyear/frontend/design-references/spec003-cadastro-desktop.png`;
+- `oneyear/frontend/design-references/spec003-cadastro-mobile.png`.
+
+O prompt solicitou a página Galeria completa, sidebar existente, grade fotográfica, painel de revisão, campos e ações da spec, fundo branco real, azul-marinho, azul de ação, vermelho de aviso, Geist, bordas finas e ausência de dados pessoais. A versão móvel solicitou a mesma hierarquia em uma coluna com ações sempre alcançáveis. Foi usado o modo integrado do ImageGen; as imagens são referências, não substituem controles HTML.
+
+### Registro de fidelidade visual
+
+| Ponto comparado | Resultado final |
+|---|---|
+| Estrutura desktop | Sidebar fixa, Galeria ao fundo e painel lateral de revisão reproduzem a composição do conceito. |
+| Hierarquia tipográfica | “Galeria” e “Revisar memória” mantêm peso editorial, enquanto rótulos, estados e ações usam escala de interface consistente. |
+| Paleta | Branco real, azul-marinho, azul vivo, vermelho de alerta e cinzas frios correspondem ao sistema aprovado; não foi introduzido fundo creme. |
+| Prévia e grade | A prévia ocupa o topo do painel e a grade permanece visível ao fundo; as imagens reais são dinâmicas e autenticadas. |
+| Formulário | Ordem de legenda, lugar, coordenadas, data, avisos e ações segue o conceito, com estados de foco e erro reais. |
+| Ações | “Salvar memória” permanece primária. “Cancelar” virou “Concluir depois” somente após o POST, para refletir corretamente a persistência já ocorrida. |
+| Mobile | O painel ocupa a largura disponível, os campos permanecem legíveis, coordenadas continuam lado a lado e as ações ficam fixas e alcançáveis. |
+| Temas | O conceito principal é claro; o diálogo também foi verificado no tema escuro usando os mesmos tokens semânticos. |
+
+Na primeira comparação, o painel estava mais espaçado, o backdrop desfocava a navegação, erros de coordenadas permaneciam destacados após correção e o título móvel quebrava desnecessariamente. Espaçamento, altura da prévia, backdrop, limpeza dos erros e escala móvel foram corrigidos. Conceitos e capturas finais foram novamente abertos com inspeção de imagem após esses ajustes. Não restou diferença material corrigível; fotos, textos e estados de metadados variam intencionalmente conforme a API.
+
+## Arquivos adicionados e alterados
+
+Frontend adicionado:
+
+- `src/photoForm.js`: limites, validação e normalização do formulário;
+- `src/components/PhotoUploadDialog.jsx`: seleção, prévia, upload, revisão e confirmação;
+- `test/photoForm.test.js`: formatos, limite inclusivo, coordenadas e ausência segura de dados;
+- os dois conceitos PNG da Spec 003 listados acima.
+
+Frontend alterado:
+
+- `src/api.js`: listagem, multipart autenticado e correção por PATCH;
+- `src/components/GalleryPage.jsx`: grade autenticada, estados e integração do cadastro;
+- `src/App.jsx`: tratamento de sessão expirada na Galeria;
+- `src/styles.css`: galeria, diálogo, formulário, estados, temas e responsividade;
+- `test/api.test.js`: `FormData`, CSRF, ausência de `Content-Type` manual e PATCH;
+- `README.md`: funcionalidades e fronteiras atuais.
+
+Backend alterado:
+
+- `MetadadosService.java`: aviso para diretórios de metadados com erros;
+- `MetadadosServiceTest.java`: JPEG EXIF construído no teste, GPS sul/oeste, data sem fuso e EXIF inválido;
+- `FotoServiceTest.java`: excesso de 15 MiB, mais de 40 milhões de pixels e compensação de falhas;
+- `ApiIntegrationTest.java`: limite exato, JPEG legível com EXIF inválido, coleção compartilhada, edição pela segunda conta, coordenadas-limite, preservação após erro e acesso anônimo negado.
+
+Documentação alterada:
+
+- a Spec 003 e os requisitos `RF-1ANO-006`, `RF-1ANO-007`, `RF-1ANO-008`, `RN-1ANO-002` e `RNF-1ANO-004` foram atualizados para implementados com evidências;
+- este `Project Context.md` recebeu o registro integral da execução.
+
+Não houve alteração de entidade, migration ou contrato REST: os contratos implementados na Spec 005 já eram compatíveis.
+
+## Verificações automatizadas
+
+### Frontend
+
+```text
+npm run lint  -> aprovado
+npm test      -> 10 testes aprovados, 0 falhas
+npm run build -> aprovado com Vite 7.3.7
+```
+
+Os testes cobrem autenticação/CSRF anterior, história, listagem de fotos, envio multipart original, PATCH, formatos, limite inclusivo, par de coordenadas, limites válidos, normalização e armazenamento local indisponível.
+
+### Backend
+
+```text
+mvn test
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+A suíte cobre fluxo completo, duas contas, autorização, tipo real, tamanho, dimensões, EXIF válido/ausente/inválido, origem manual, compensação e reconciliação. O aviso informativo do Mockito sobre carregamento dinâmico futuro permanece sem impacto no Java 21.
+
+## QA renderizado
+
+O plugin Browser não estava disponível. Foi usado Playwright temporário com Microsoft Edge headless como fallback, sem adicioná-lo ao `package.json` ou ao lockfile. A API foi interceptada somente no QA visual; o contrato real foi validado separadamente pelos testes Spring.
+
+Fluxo exercitado:
+
+1. abrir `#galeria` autenticado e carregar a grade;
+2. abrir “Adicionar foto”;
+3. selecionar PNG e confirmar a prévia local;
+4. enviar e receber aviso de metadados ausentes;
+5. tentar salvar coordenadas incompletas e ver o erro;
+6. completar longitude/data, salvar e receber confirmação;
+7. voltar à grade e encontrar a memória atualizada;
+8. rejeitar arquivo de tipo incorreto;
+9. fechar com `Escape` e confirmar retorno de foco;
+10. abrir o formulário no tema escuro.
+
+Foram verificadas as larguras 375, 430, 768, 1024, 1366, 1440 e 1920 px, sem overflow horizontal. Também foram confirmados título/identidade da página, conteúdo não vazio, ausência de overlay do Vite, console sem erros/avisos relevantes, imagem carregada, controles reais e estado atualizado após cada interação.
+
+Capturas finais ficaram fora do repositório em `%TEMP%/oneyear-spec003-qa/`: `galeria-desktop-1440.png`, `revisao-desktop-1440.png` e `revisao-mobile-390.png`. A captura desktop foi feita no viewport de referência solicitado de 1440×900; a móvel, em 390×844. Ambas foram inspecionadas diretamente contra os conceitos finais.
+
+## Matriz dos critérios da Spec 003
+
+| Critério | Evidência | Estado |
+|---|---|---|
+| JPEG/PNG válido gera 201 e entra na coleção | Integração Spring e fluxo renderizado completo. | Atendido |
+| Arquivo com 15 MiB exatos é aceito | Teste de integração persiste exatamente `15 * 1024 * 1024` bytes. | Atendido |
+| Tipo, tamanho ou dimensões inválidos são rejeitados | Integração, serviço e validação do frontend. | Atendido |
+| GPS sul/oeste torna-se negativo | JPEG EXIF construído em teste resulta em latitude/longitude negativas. | Atendido |
+| Ausência ou erro de EXIF não impede foto válida | PNG sem EXIF e JPEG com EXIF inválido são cadastrados com campos nulos/aviso. | Atendido |
+| Data sem offset não recebe fuso inventado | Teste confirma data/hora e `offset = null`. | Atendido |
+| Correção manual torna foto elegível para pin | PATCH registra origem manual e `/pins` passa a listar a foto. | Atendido |
+| Coordenadas inválidas não alteram versão anterior | Limites aceitos e tentativa `91/0` rejeitada preservando `-90/180`. | Atendido |
+| Coleção é comum às duas contas | Segunda conta lista e corrige foto criada pela primeira. | Atendido |
+| Falhas de storage/banco não expõem parcial | Compensação, ausência de gravação e reconciliação cobertas por testes. | Atendido |
+| Formulário utilizável e responsivo | QA por teclado, tema escuro e sete larguras sem overflow. | Atendido |
+
+## Pendências externas e continuidade
+
+- O fluxo não foi executado contra Neon/PostgreSQL e Object Storage reais porque essa verificação depende de credenciais e serviços externos; nenhum segredo foi lido ou registrado.
+- O comportamento do storage foi validado por mocks do cliente S3, testes de compensação e reconciliação. A migration foi exercitada anteriormente em H2 compatível com PostgreSQL.
+- A grade desta entrega comprova que a foto entra e permanece na coleção. Agrupamento cronológico avançado, filtro por ano, paginação visual, mapa, pins e popup serão tratados pela Spec 004.
+- `RNF-1ANO-002` e `RNF-1ANO-003` continuam parcialmente implementados apenas porque o popup da Spec 004 ainda não existe; a parte referente ao formulário de upload já foi validada.
+
+## Continuação e fechamento da execução da SPEC-1ANO-003 — 2026-10-07
+
+- A execução foi retomada após uma tentativa provisória de iniciar a Spec 004. Para manter o escopo solicitado, foram removidos os arquivos, conceitos e dependência Leaflet criados apenas para essa tentativa; nenhum contrato, entidade ou entrega da Spec 003 foi descartado.
+- O estado final da Spec 003 permanece limitado ao cadastro, revisão, metadados, coleção compartilhada e tratamento de falhas. Filtro cronológico, mapa real, pins e popup seguem explicitamente reservados para a Spec 004.
+- Verificação repetida do frontend: `npm run lint` aprovado; `npm test` com 10 testes aprovados; `npm run build` aprovado com Vite 7.3.7.
+- Verificação repetida do backend: Maven 3.9.16 com Java 21, `mvn test`, 20 testes aprovados, 0 falhas, 0 erros e `BUILD SUCCESS`. O processo precisou receber `JAVA_TOOL_OPTIONS` apontando `user.home` e o repositório Maven para diretórios do usuário, sem alteração no código ou nas configurações versionadas.
+- QA renderizado repetido com Playwright temporário e Microsoft Edge headless, pois o plugin Browser não estava disponível. O roteiro autenticado abriu a Galeria, selecionou PNG, confirmou prévia, enviou multipart (201), exibiu revisão com aviso de EXIF ausente, salvou coordenadas/data via PATCH (200), mostrou confirmação e abriu o formulário em 390×844. Não houve erros de console nem `pageerror`.
+- As capturas de QA permaneceram fora do repositório em `%TEMP%/oneyear-spec003-qa/`. O conceito aprovado e as capturas finais foram inspecionados com `view_image`; a diferença de conteúdo visual (foto neutra mockada versus imagens do conceito) é intencional do interceptador de API e não altera o fluxo de controles HTML.
+- Nenhuma credencial, foto pessoal, legenda, data ou coordenada real foi incluída. O diretório `.vscode/` e o `package-lock.json` da raiz já existentes permaneceram intocados.

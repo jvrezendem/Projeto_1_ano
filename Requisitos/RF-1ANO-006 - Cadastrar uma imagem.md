@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-006 |
 | Tipo | Funcional |
 | Prioridade | Must — proposta para o MVP |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; limites técnicos propostos na spec; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Adicionar novas memórias sem alterar o código.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado JPEG válido dentro do limite, quando enviar a foto, então o cadastro é confirmado e a foto aparece na galeria.
-- [ ] **Fronteira** — Dado arquivo exatamente no limite configurado, quando enviar a foto, então o upload é aceito se as demais validações passarem.
-- [ ] **Falha** — Dado arquivo inválido ou maior que o limite, quando enviar a foto, então o envio é rejeitado sem criar uma memória visível.
+- [x] **Sucesso** — Dado JPEG válido dentro do limite, quando enviar a foto, então o cadastro é confirmado e a foto aparece na galeria.
+- [x] **Fronteira** — Dado arquivo exatamente no limite configurado, quando enviar a foto, então o upload é aceito se as demais validações passarem.
+- [x] **Falha** — Dado arquivo inválido ou maior que o limite, quando enviar a foto, então o envio é rejeitado sem criar uma memória visível.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Adicionar novas memórias sem alterar o código.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: testes Spring aceitam JPEG/PNG e arquivo de 15 MiB exatos, rejeitam tipo inválido, excesso de tamanho e dimensões; QA renderizado confirma prévia, upload e inclusão na grade.
 - **Objetivo/spec**: [[SPEC-1ANO-003 - Cadastro de fotos e metadados]].
-- **Tarefa/teste**: `CT-RF-1ANO-006-S`, `CT-RF-1ANO-006-F` e `CT-RF-1ANO-006-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `ApiIntegrationTest`, `FotoServiceTest`, `photoForm.test.js` e QA da Spec 003 cobrem `CT-RF-1ANO-006-S`, `CT-RF-1ANO-006-F` e `CT-RF-1ANO-006-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Adicionar novas memórias sem alterar o código.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Implementação e validação dos três cenários de aceite | IA |
 
 ## Revisão rápida
 

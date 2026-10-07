@@ -67,6 +67,24 @@ export function obterHistoria() {
   return requisitar("/api/v1/historia");
 }
 
+export function listarFotos({ page = 0, size = 24 } = {}) {
+  return requisitar(`/api/v1/fotos?page=${page}&size=${size}`);
+}
+
+export function cadastrarFoto(arquivo) {
+  const formulario = new FormData();
+  formulario.append("file", arquivo);
+  return escrever("/api/v1/fotos", { method: "POST", body: formulario });
+}
+
+export function atualizarFoto(id, dados) {
+  return escrever(`/api/v1/fotos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados),
+  });
+}
+
 export async function sair() {
   try {
     await escrever("/api/v1/auth/logout", { method: "POST" });

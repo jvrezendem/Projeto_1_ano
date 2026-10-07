@@ -1,9 +1,9 @@
 ---
 tipo: spec-feature
 area: 1Ano
-status: rascunho
+status: implementado
 spec_id: SPEC-1ANO-003
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -19,9 +19,9 @@ requisitos_relacionados:
 
 # SPEC-1ANO-003 - Cadastro de fotos e metadados
 
-**Estado:** rascunho para revisão; não representa implementação concluída.
+**Estado:** implementado e validado em 2026-10-07.
 **Origem:** [[00 - Projeto 1Ano#Fontes e limites]].
-**Branch:** não criada; este documento especifica o comportamento.
+**Branch:** `develop`.
 
 ## Relação com os requisitos do vault
 
@@ -35,7 +35,7 @@ requisitos_relacionados:
 
 A foto é a unidade principal de memória. O usuário envia um arquivo, o backend extrai os metadados disponíveis e a foto entra na galeria. Quando houver coordenadas válidas, ela também fica disponível no mapa.
 
-**Propostas desta versão:** coleção compartilhada, complementação manual dos dados, um arquivo por envio, PostgreSQL para registros e armazenamento privado separado para imagens. Provedor ainda não escolhido. Essas decisões complementam o pedido e estão abertas à revisão.
+**Decisões confirmadas nesta implementação:** coleção compartilhada, complementação manual dos dados, um arquivo por envio, PostgreSQL para registros e Neon Object Storage privado para imagens. O frontend não publica URLs diretas do bucket; os bytes são entregues somente pela API autenticada.
 
 ### Fronteira de responsabilidade
 
@@ -153,19 +153,30 @@ Falha na extração de EXIF é um aviso de metadados, não falha de upload, desd
 
 Upload em lote, vídeos, edição/corte de imagens, remoção de fotos pela interface, reconhecimento facial, inferência de lugar por IA e detecção automática de duplicatas.
 
+## Resultado da implementação
+
+- A Galeria permite selecionar um JPEG ou PNG, validar o limite de 15 MiB, exibir prévia local e enviar o arquivo original por multipart com CSRF.
+- Após a resposta 201, um diálogo lateral permite revisar legenda, lugar, par latitude/longitude e data civil, preservando valores extraídos e avisos de EXIF.
+- Coordenadas precisam ser informadas juntas; limites `-90/90` e `-180/180` são aceitos, e valores inválidos não alteram a versão persistida.
+- A grade básica é recarregada da API, apresenta as fotos da coleção comum e possui estados de carregamento, vazio, erro e imagem indisponível. Filtros cronológicos e popup continuam sob responsabilidade da Spec 004.
+- O backend valida assinatura, decodificação, tipo, tamanho e até 40 milhões de pixels, extrai GPS/data, registra a origem dos campos e compensa falhas entre armazenamento e banco.
+- EXIF inválido em uma imagem legível gera aviso e não impede o cadastro. Data sem offset permanece sem fuso inventado.
+- O fluxo foi validado nas larguras 375, 430, 768, 1024, 1366, 1440 e 1920 px, nos temas claro e escuro e por teclado.
+- Nenhuma foto, data, local ou legenda pessoal foi incluída no código, nos conceitos ou na documentação.
+
 ## Questões abertas
 
 | ID | Questão | Responsável | Momento | Bloqueia? |
 |---|---|---|---|---|
-| Q-F01 | Confirmar formatos, 15 MiB e 40 MP; verificar se o acervo exige HEIC. | Autor | Antes do parser/upload | Formatos finais |
-| Q-F02 | Escolher armazenamento privado e ambiente de persistência. | Autor | Antes da implementação de armazenamento | Persistência real |
-| Q-F03 | Confirmar coleção compartilhada e edição por ambas as contas. | Autor | Antes das permissões de escrita | Política de edição |
+| Q-F01 | **Resolvida:** JPEG e PNG, 15 MiB e 40 MP confirmados para o MVP; HEIC permanece fora do escopo. | Autor | Resolvida em 2026-10-07 | Não |
+| Q-F02 | **Resolvida:** Neon Object Storage privado e PostgreSQL, conforme as regras do projeto. | Autor | Resolvida em 2026-10-07 | Não |
+| Q-F03 | **Resolvida:** coleção e correção de metadados compartilhadas entre as duas contas. | Autor | Resolvida em 2026-10-07 | Não |
 
 ## Checklist antes do planejamento
 
 - [x] Fluxo de upload e extração especificado.
 - [x] Ausência de GPS/data e precedência manual definidas.
 - [x] Falhas entre banco e arquivo consideradas.
-- [ ] Formatos, armazenamento e permissões validados.
+- [x] Formatos, armazenamento e permissões validados.
 
 

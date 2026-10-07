@@ -1,9 +1,9 @@
 ---
 tipo: requisito
 area: 1Ano
-status: proposto
+status: implementado
 prioridade: Must
-versao: 0.1
+versao: 1.0
 data: 2026-10-01
 responsavel: Autor do projeto
 tags:
@@ -23,7 +23,7 @@ metodo_verificacao: teste e inspeção
 | ID | RF-1ANO-007 |
 | Tipo | Funcional |
 | Prioridade | Must |
-| Status | Proposto |
+| Status | Implementado |
 | Responsável | Autor do projeto |
 | Origem | Pedido atual; ver [[00 - Projeto 1Ano#Fontes e limites]] |
 
@@ -37,9 +37,9 @@ Evitar preenchimento manual quando a própria foto contém os dados.
 
 ## Critérios de aceite
 
-- [ ] **Sucesso** — Dado JPEG com GPS e data válidos, quando cadastrar a foto, então coordenadas e data de captura são preenchidas.
-- [ ] **Fronteira** — Dado imagem sem EXIF, quando cadastrar a foto, então os campos permanecem desconhecidos e o cadastro é concluído.
-- [ ] **Falha** — Dado EXIF parcial ou inválido em imagem legível, quando extrair os metadados, então os campos inválidos são ignorados e o resultado sinaliza a limitação.
+- [x] **Sucesso** — Dado JPEG com GPS e data válidos, quando cadastrar a foto, então coordenadas e data de captura são preenchidas.
+- [x] **Fronteira** — Dado imagem sem EXIF, quando cadastrar a foto, então os campos permanecem desconhecidos e o cadastro é concluído.
+- [x] **Falha** — Dado EXIF parcial ou inválido em imagem legível, quando extrair os metadados, então os campos inválidos são ignorados e o resultado sinaliza a limitação.
 
 ## Regras e limites
 
@@ -51,9 +51,9 @@ Evitar preenchimento manual quando a própria foto contém os dados.
 ## Verificação e rastreabilidade
 
 - **Método**: teste funcional e inspeção dos dados, da interface ou do código, conforme o requisito.
-- **Evidência esperada**: resultado dos três cenários de aceite; execução ainda pendente.
+- **Evidência**: testes constroem JPEG com GPS sul/oeste e data original, confirmam graus negativos, ausência de fuso inventado, imagem sem EXIF e JPEG legível com EXIF inválido acompanhado de aviso.
 - **Objetivo/spec**: [[SPEC-1ANO-003 - Cadastro de fotos e metadados]].
-- **Tarefa/teste**: `CT-RF-1ANO-007-S`, `CT-RF-1ANO-007-F` e `CT-RF-1ANO-007-E` designam os cenários de sucesso, fronteira e erro; identificadores reservados, sem testes implementados.
+- **Tarefa/teste**: `MetadadosServiceTest` e `ApiIntegrationTest` cobrem `CT-RF-1ANO-007-S`, `CT-RF-1ANO-007-F` e `CT-RF-1ANO-007-E`.
 
 ## Questões abertas
 
@@ -64,6 +64,7 @@ Evitar preenchimento manual quando a própria foto contém os dados.
 | Versão | Data | Alteração | Autor |
 |---|---|---|---|
 | 0.1 | 2026-10-01 | Criação a partir do pedido e das fontes identificadas | IA, para revisão do autor |
+| 1.0 | 2026-10-07 | Implementação e validação dos três cenários de aceite | IA |
 
 ## Revisão rápida
 

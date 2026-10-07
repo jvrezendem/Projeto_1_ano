@@ -63,6 +63,26 @@ class FotoServiceTest {
 		verify(repository, never()).saveAndFlush(any());
 	}
 
+	@Test
+	void rejeitaArquivoAcimaDoLimiteAntesDoStorage() {
+		byte[] bytes = new byte[15 * 1024 * 1024 + 1];
+		MockMultipartFile arquivo = new MockMultipartFile("file", "foto.png", "image/png", bytes);
+		ApiException erro = assertThrows(ApiException.class, () -> service.cadastrar(arquivo, "usuario"));
+		org.junit.jupiter.api.Assertions.assertEquals("ARQUIVO_MUITO_GRANDE", erro.getCodigo());
+		verify(armazenamento, never()).salvar(anyString(), any(), anyString());
+	}
+
+	@Test
+	void rejeitaImagemComMaisDeQuarentaMilhoesDePixels() throws Exception {
+		byte[] bytes = arquivoValido().getBytes();
+		bytes[16] = 0; bytes[17] = 0; bytes[18] = 39; bytes[19] = 16;
+		bytes[20] = 0; bytes[21] = 0; bytes[22] = 15; bytes[23] = (byte) 161;
+		MockMultipartFile arquivo = new MockMultipartFile("file", "foto.png", "image/png", bytes);
+		ApiException erro = assertThrows(ApiException.class, () -> service.cadastrar(arquivo, "usuario"));
+		org.junit.jupiter.api.Assertions.assertEquals("IMAGEM_MUITO_GRANDE", erro.getCodigo());
+		verify(armazenamento, never()).salvar(anyString(), any(), anyString());
+	}
+
 	private MockMultipartFile arquivoValido() throws Exception {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ImageIO.write(new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB), "png", output);
