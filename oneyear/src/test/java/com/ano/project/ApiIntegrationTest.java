@@ -134,8 +134,8 @@ class ApiIntegrationTest {
 		mvc.perform(get("/api/v1/me").session(sessao))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
-				.andExpect(jsonPath("$.caracteristicas[0]").value("Gentil"))
-				.andExpect(jsonPath("$.avatarUrl").value("/api/v1/me/avatar"));
+				.andExpect(jsonPath("$.gostos[0]").value("Gentil"))
+				.andExpect(jsonPath("$.avatarUrl", org.hamcrest.Matchers.startsWith("/api/v1/me/avatar?v=")));
 		mvc.perform(get("/api/v1/me/avatar").session(sessao))
 				.andExpect(status().isOk()).andExpect(content().bytes(new byte[] {1, 2}));
 		mvc.perform(get("/api/v1/me/avatar").with(user(segundoLogin)))
@@ -164,6 +164,41 @@ class ApiIntegrationTest {
 		mvc.perform(get("/api/v1/me").session(segundaSessao))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.nome").value("Pessoa Dois"));
+	}
+
+	@Test
+	void permiteEditarSomenteOsGostosDoOutroPerfilEEnviarOProprioAvatar() throws Exception {
+		mvc.perform(get("/api/v1/me/parceiro").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome").value("Pessoa Dois"))
+				.andExpect(jsonPath("$.gostos").isEmpty());
+
+		mvc.perform(patch("/api/v1/me/parceiro/gostos").with(user(login)).with(csrf())
+				.contentType("application/json")
+				.content("{\"gostos\":[\"Seu cuidado\",\"Seu sorriso\"]}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome").value("Pessoa Dois"))
+				.andExpect(jsonPath("$.gostos[0]").value("Seu cuidado"));
+
+		mvc.perform(get("/api/v1/me").with(user(segundoLogin)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.gostos[1]").value("Seu sorriso"));
+		mvc.perform(get("/api/v1/me").with(user(login)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.gostos[0]").value("Gentil"));
+
+		mvc.perform(patch("/api/v1/me/parceiro/gostos").with(user(login)).with(csrf())
+				.contentType("application/json")
+				.content("{\"gostos\":[\"\"]}"))
+				.andExpect(status().isBadRequest());
+
+		MockMultipartFile avatar = new MockMultipartFile("file", "perfil.png", "image/png", png());
+		mvc.perform(multipart("/api/v1/me/avatar").file(avatar).with(user(segundoLogin)).with(csrf()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome").value("Pessoa Dois"))
+				.andExpect(jsonPath("$.avatarUrl", org.hamcrest.Matchers.startsWith("/api/v1/me/avatar?v=")));
+		org.junit.jupiter.api.Assertions.assertTrue(
+				usuarios.findByLogin(segundoLogin).orElseThrow().getAvatarKey().startsWith("avatares/"));
 	}
 
 	@Test

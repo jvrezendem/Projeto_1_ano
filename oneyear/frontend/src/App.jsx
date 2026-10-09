@@ -2,11 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import * as api from "./api";
 import Button from "./components/Button";
+import AmbientBackground from "./components/AmbientBackground";
+import BrandLogo from "./components/BrandLogo";
 import GalleryPage from "./components/GalleryPage";
 import HistoriaPage from "./components/HistoriaPage";
 import LoginPage from "./components/LoginPage";
 import ProfilePage from "./components/ProfilePage";
+import RevealObserver from "./components/RevealObserver";
 import Sidebar from "./components/Sidebar";
+import { Separator } from "@/components/ui/separator";
 import { aplicarPreferencias, lerPreferencias, salvarPreferencia, TEMA_CLARO, TEMA_ESCURO } from "./preferences";
 
 const preferenciasIniciais = lerPreferencias();
@@ -138,12 +142,13 @@ export default function App() {
   };
 
   if (sessao.estado === "carregando") {
-    return <main className="status-page" aria-busy="true"><span className="spinner" /><p>Verificando sessão…</p></main>;
+    return <main className="status-page" aria-busy="true"><BrandLogo className="status-logo" /><span className="spinner" /><p>Verificando sessão…</p></main>;
   }
 
   if (sessao.estado === "erro") {
     return (
       <main className="status-page">
+        <BrandLogo className="status-logo" />
         <h1>Não foi possível verificar sua sessão.</h1>
         <p>Confira a conexão e tente novamente.</p>
         <Button type="button" variant="outline" onClick={carregarPerfil}>
@@ -160,6 +165,8 @@ export default function App() {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
+      <AmbientBackground />
+      <RevealObserver />
       <Sidebar
         page={pagina}
         tema={tema}
@@ -171,12 +178,24 @@ export default function App() {
         onToggleMotion={alternarMovimento}
       />
       <main className="app-content" id="conteudo" tabIndex="-1">
-        {pagina === "perfil" ? <ProfilePage key={sessao.perfil.id} perfil={sessao.perfil} /> : null}
+        {pagina === "perfil" ? (
+          <ProfilePage
+            perfil={sessao.perfil}
+            onGallery={() => navegar("galeria")}
+            onProfileUpdated={(perfil) => setSessao({ estado: "autenticada", perfil })}
+          />
+        ) : null}
         {pagina === "galeria" ? <GalleryPage onUnauthorized={voltarAoLogin} /> : null}
         {pagina === "inicial" ? (
           <HistoriaPage onGallery={() => navegar("galeria")} onUnauthorized={voltarAoLogin} />
         ) : null}
       </main>
+      <Separator className="app-separator section-wrap" />
+      <footer className="footer section-wrap">
+        <BrandLogo className="footer-logo" />
+        <p>Feito para lembrar.</p>
+        <span>Uma coleção de afetos <span aria-hidden="true">♡</span></span>
+      </footer>
     </div>
   );
 }

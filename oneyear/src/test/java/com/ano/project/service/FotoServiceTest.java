@@ -45,7 +45,7 @@ class FotoServiceTest {
 		when(usuarios.buscarUsuario(anyString())).thenReturn(mock(Usuario.class));
 		when(metadados.extrair(any())).thenReturn(new MetadadosService.Metadados(
 				null, null, null, null, null, List.of()));
-		service = new FotoService(repository, usuarios, metadados, armazenamento, transacoes);
+		service = new FotoService(repository, usuarios, metadados, new ImagemService(), armazenamento, transacoes);
 	}
 
 	@Test

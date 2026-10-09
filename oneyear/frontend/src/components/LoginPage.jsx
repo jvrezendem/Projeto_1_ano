@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Eye from "lucide-react/dist/esm/icons/eye";
 import EyeOff from "lucide-react/dist/esm/icons/eye-off";
-import Heart from "lucide-react/dist/esm/icons/heart";
 import Button from "./Button";
+import BrandLogo from "./BrandLogo";
+import LoginMap from "./LoginMap";
 import { ThemeControl } from "./VisualControls";
 
 export default function LoginPage({ tema, onLogin, onToggleTheme, notice }) {
@@ -37,13 +38,13 @@ export default function LoginPage({ tema, onLogin, onToggleTheme, notice }) {
     <main className="login-page" id="conteudo">
       <section className="login-content" aria-labelledby="login-title">
         <header className="login-header">
-          <a className="wordmark" href="#login" aria-label="Página de login" translate="no">
-            ana<span>.</span>
+          <a className="brand-link" href="#login" aria-label="Página de login">
+            <BrandLogo />
           </a>
           <ThemeControl tema={tema} onToggle={onToggleTheme} compact />
         </header>
         <div className="login-copy">
-          <h1 id="login-title">Entre para<br />revisitar.</h1>
+          <h1 id="login-title">Entre para<br /><em>revisitar.</em></h1>
           <p>Um espaço privado para guardar o que importa.</p>
         </div>
 
@@ -96,10 +97,7 @@ export default function LoginPage({ tema, onLogin, onToggleTheme, notice }) {
         </form>
       </section>
 
-      <aside className="login-art" aria-hidden="true">
-        <img src="/login-memories.png" alt="" />
-        <Heart className="login-art-mark" fill="currentColor" />
-      </aside>
+      <LoginMap />
     </main>
   );
 }

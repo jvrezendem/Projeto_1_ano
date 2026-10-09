@@ -1,31 +1,53 @@
 import { useCallback, useEffect, useState } from "react";
+import ArrowDown from "lucide-react/dist/esm/icons/arrow-down";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
+import Camera from "lucide-react/dist/esm/icons/camera";
+import Compass from "lucide-react/dist/esm/icons/compass";
 import GalleryVerticalEnd from "lucide-react/dist/esm/icons/gallery-vertical-end";
 import Heart from "lucide-react/dist/esm/icons/heart";
 import ImageOff from "lucide-react/dist/esm/icons/image-off";
-import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
 import * as api from "../api";
 import Button from "./Button";
 import MemoryDetailDialog from "./MemoryDetailDialog";
 import MemoryMap from "./MemoryMap";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const orientacoesPadrao = [
-  { titulo: "Explore a galeria", texto: "Veja as fotos reunidas em um só lugar.", Icon: GalleryVerticalEnd },
-  { titulo: "Adicione fotos", texto: "O cadastro ficará acessível pela galeria.", Icon: Plus },
-  { titulo: "Encontre no mapa", texto: "Memórias com localização recebem um coração.", Icon: MapPin },
+  { titulo: "Encontre um lugar", texto: "Navegue pelo mapa e encontre as memórias que ganharam um lugar no mundo.", Icon: Compass },
+  { titulo: "Guarde uma lembrança", texto: "Adicione novas fotos e complete os detalhes que tornam cada instante único.", Icon: Plus },
+  { titulo: "Siga o fio da história", texto: "Percorra a galeria em ordem cronológica e volte aos capítulos que importam.", Icon: GalleryVerticalEnd },
 ];
+
+const fotosDeAssets = {
+  principal: {
+    src: "/assets/fotos/historia/destaque-principal.jpg",
+    caminho: "public/assets/fotos/historia/destaque-principal.jpg",
+  },
+  polaroid: {
+    src: "/assets/fotos/historia/destaque-polaroid.jpg",
+    caminho: "public/assets/fotos/historia/destaque-polaroid.jpg",
+  },
+};
 
 const formatarData = (data) => data
   ? new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${data}T00:00:00Z`))
   : "";
 
+function TituloDestacado({ children }) {
+  const texto = String(children || "Nossa história").trim();
+  const partes = texto.split(/\s+/);
+  const destaque = partes.pop();
+  return <>{partes.join(" ")} {destaque ? <em>{destaque}</em> : null}</>;
+}
+
 function HistoriaSkeleton() {
   return (
     <section className="story-page story-skeleton" aria-busy="true" aria-label="Carregando história">
-      <div className="skeleton skeleton--title" />
-      <div className="skeleton skeleton--text" />
-      <div className="skeleton skeleton--media" />
+      <Skeleton className="skeleton skeleton--title" />
+      <Skeleton className="skeleton skeleton--text" />
+      <Skeleton className="skeleton skeleton--media" />
     </section>
   );
 }
@@ -51,9 +73,7 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
 
   useEffect(() => {
     let ativo = true;
-    queueMicrotask(() => {
-      if (ativo) carregar();
-    });
+    queueMicrotask(() => { if (ativo) carregar(); });
     return () => { ativo = false; };
   }, [carregar]);
 
@@ -73,6 +93,27 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
   const abrirDetalhe = (fotoIds, indice, opener) => setSelecao({ fotoIds, indice, opener });
   const fecharDetalhe = () => setSelecao(null);
 
+  const renderFotoDeAsset = (tipo, className, alt) => {
+    const asset = fotosDeAssets[tipo];
+    const assetFalhou = imagensFalhas.includes(asset.src);
+    const conteudo = !assetFalhou ? (
+      <img
+        src={asset.src}
+        alt={alt}
+        loading={className.includes("hero-photo-main") ? "eager" : "lazy"}
+        onError={() => setImagensFalhas((atuais) => atuais.includes(asset.src) ? atuais : [...atuais, asset.src])}
+      />
+    ) : (
+      <span className="asset-photo-placeholder">
+        <Camera size={className.includes("hero-photo-main") ? 30 : 20} />
+        <strong>Adicione sua foto aqui</strong>
+        <code>{asset.caminho}</code>
+      </span>
+    );
+
+    return <div className={className}>{conteudo}</div>;
+  };
+
   return (
     <article className="story-page">
       {estado.erro ? (
@@ -82,45 +123,81 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
         </div>
       ) : null}
 
-      <header className="story-hero">
+      <header className="story-hero section-wrap" data-reveal="hero">
         <div className="story-hero-copy">
-          <h1>{frasePrincipal?.trim() || "Nossa história"}</h1>
-          <p>{introducao?.trim() || "O conteúdo privado ainda não foi configurado."}</p>
+          <span className="eyebrow">UM ANO DE NÓS. TANTOS CAMINHOS.</span>
+          <h1><TituloDestacado>{frasePrincipal?.trim() || "Tem lugares que ficam na gente."}</TituloDestacado></h1>
+          <p>{introducao?.trim() || "Um pequeno universo feito das nossas memórias."}</p>
+          <Button type="button" onClick={() => document.getElementById("nossa-historia")?.scrollIntoView({ behavior: "smooth" })}>
+            Explorar nossas memórias <ArrowDown size={17} />
+          </Button>
         </div>
-        <div className="story-hero-art" aria-hidden="true">
-          <img src="/login-memories.png" alt="" />
+
+        <div className="hero-collage">
+          {renderFotoDeAsset("principal", "hero-photo-main", "Foto em destaque da história")}
+          {renderFotoDeAsset("polaroid", "hero-photo-small", "Foto em formato polaroid da história")}
+          <span className="handwritten" aria-hidden="true">o nosso lugar<br />é juntos.</span>
+          <svg className="orbit-line" viewBox="0 0 500 560" aria-hidden="true"><path d="M60 460C-90 260 230-60 423 72S565 396 338 524" /><path d="m328 516 10 8 12-6" /></svg>
+        </div>
+
+        <div className="hero-bottom">
+          <a href="#nossa-historia"><span className="scroll-line" /> Continue a história <ArrowDown size={14} /></a>
         </div>
       </header>
 
-      <section className="timeline" aria-labelledby="timeline-title">
-        <h2 id="timeline-title">Nossa história</h2>
+      <section className="story-intro section-wrap" aria-labelledby="story-intro-title">
+        <div data-reveal="left">
+          <span className="eyebrow">O QUE NOS TROUXE ATÉ AQUI</span>
+          <h2 id="story-intro-title">De todos os lugares,<br />o meu favorito<br />é <em>com você.</em></h2>
+        </div>
+        <div className="story-intro-copy" data-reveal="right">
+          <Heart size={54} strokeWidth={1} aria-hidden="true" />
+          <p>{introducao?.trim() || "Tem dias que a gente gostaria de guardar inteiros."}</p>
+          <button className="text-link" type="button" onClick={onGallery}>Percorrer todas as memórias <ArrowUpRight size={17} /></button>
+        </div>
+      </section>
+
+      <section className="timeline section-wrap" id="nossa-historia" aria-labelledby="timeline-title">
+        <div className="timeline-heading" data-reveal="up">
+          <span className="eyebrow">CAPÍTULOS QUE FICAM</span>
+          <h2 id="timeline-title">A gente se encontra<br />nos <em>detalhes.</em></h2>
+          <p>Um lugar, um instante, um jeito de lembrar.<br />Percorra os capítulos da nossa história.</p>
+        </div>
+
         {secoes.length ? (
           <ol>
             {secoes.map((secao, indice) => {
               const chave = secao.id || `${secao.ordem}-${indice}`;
               const imagemFalhou = imagensFalhas.includes(chave);
               return (
-                <li key={chave} className={indice % 2 ? "timeline-item timeline-item--reverse" : "timeline-item"}>
-                  <span className="timeline-marker" aria-hidden="true"><Heart size={16} fill="currentColor" /></span>
+                <li key={chave} className="timeline-item" data-reveal={indice % 2 ? "right" : "left"} style={{ "--reveal-delay": `${Math.min(indice, 4) * 70}ms` }}>
+                  <span className="timeline-marker" aria-hidden="true" />
                   <div className="timeline-copy">
+                    <span className="chapter-number">{String(indice + 1).padStart(2, "0")} / NOSSA HISTÓRIA</span>
                     {secao.data ? <time dateTime={secao.data}>{formatarData(secao.data)}</time> : null}
                     <h3>{secao.titulo}</h3>
                     <p>{secao.texto}</p>
+                    {secao.fotoId ? (
+                      <button className="text-link" type="button" onClick={(event) => abrirDetalhe([secao.fotoId], 0, event.currentTarget)}>
+                        Revisitar esse instante <ArrowUpRight size={17} />
+                      </button>
+                    ) : null}
                   </div>
                   {secao.fotoId ? (
-                    <div className="timeline-media">
+                    <button className="timeline-media" type="button" aria-label={`Abrir memória ${secao.titulo}`} onClick={(event) => abrirDetalhe([secao.fotoId], 0, event.currentTarget)}>
                       {imagemFalhou ? (
-                        <div className="image-fallback" role="status"><ImageOff size={32} /><span>Imagem indisponível</span></div>
+                        <span className="image-fallback" role="status"><ImageOff size={32} /><span>Imagem indisponível</span></span>
                       ) : (
                         <img
                           src={api.urlDaApi(`/api/v1/fotos/${secao.fotoId}/arquivo`)}
                           alt=""
                           loading="lazy"
-                          onError={() => setImagensFalhas((atuais) => [...atuais, chave])}
+                          onError={() => setImagensFalhas((atuais) => atuais.includes(chave) ? atuais : [...atuais, chave])}
                         />
                       )}
-                    </div>
-                  ) : null}
+                      <span className="timeline-place"><Camera size={16} /> {secao.titulo} <ArrowUpRight size={18} /></span>
+                    </button>
+                  ) : <div className="timeline-media timeline-media--empty"><Heart size={44} aria-hidden="true" /></div>}
                 </li>
               );
             })}
@@ -134,26 +211,36 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
         )}
       </section>
 
-      <section className="story-guide" aria-labelledby="guide-title">
-        <h2 id="guide-title">Como usar este espaço</h2>
+      <section className="story-guide section-wrap" aria-labelledby="guide-title">
+        <div className="guide-heading" data-reveal="up">
+          <span className="eyebrow">PARA EXPLORAR SEM PRESSA</span>
+          <h2 id="guide-title">Voltar é <em>simples.</em></h2>
+        </div>
         <div className="guide-grid">
-          {orientacoesPadrao.map(({ titulo, texto, Icon }) => (
-            <div key={titulo} className="guide-item">
-              <Icon size={28} aria-hidden="true" />
+          {orientacoesPadrao.map(({ titulo, texto, Icon }, indice) => (
+            <article key={titulo} className="guide-item" data-reveal="up" style={{ "--reveal-delay": `${indice * 90}ms` }}>
+              <div><span>0{indice + 1}</span><Icon size={23} aria-hidden="true" /></div>
               <h3>{titulo}</h3>
               <p>{texto}</p>
-            </div>
+            </article>
           ))}
         </div>
         {dicas.length ? <ul className="story-tips">{dicas.map((dica) => <li key={dica}>{dica}</li>)}</ul> : null}
       </section>
 
-      <section className="memory-map" aria-labelledby="map-title">
-        <div className="section-heading">
-          <h2 id="map-title">Mapa das memórias</h2>
-          <p>Explore os lugares da história ou use a lista alternativa.</p>
+      <section className="memory-map section-wrap" aria-labelledby="map-title">
+        <div className="section-heading" data-reveal="up">
+          <div><span className="eyebrow">NOSSO MAPA</span><h2 id="map-title">O mundo é grande.<br />O afeto <em>aproxima.</em></h2></div>
+          <p>Há uma história em cada coração. Selecione um lugar para voltar àquele momento.</p>
         </div>
-        <MemoryMap compact onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} onGallery={onGallery} />
+        <div data-reveal="scale"><MemoryMap compact onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} onGallery={onGallery} /></div>
+      </section>
+
+      <section className="story-closing section-wrap" data-reveal="up">
+        <span className="eyebrow">E AINDA TEM TANTO PELA FRENTE</span>
+        <h2>O próximo capítulo?<br /><em>Com você.</em></h2>
+        <Button type="button" onClick={onGallery}>Percorrer a galeria <ArrowUpRight size={17} /></Button>
+        <span className="closing-script" aria-hidden="true">continua...</span>
       </section>
 
       {selecao ? (

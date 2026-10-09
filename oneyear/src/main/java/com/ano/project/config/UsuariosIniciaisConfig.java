@@ -34,10 +34,9 @@ public class UsuariosIniciaisConfig implements ApplicationRunner {
 		if (repository.count() + ausentes != 2) {
 			throw new IllegalStateException("O banco deve conter exatamente as duas contas configuradas.");
 		}
-		contas.stream()
-				.filter(c -> repository.findByLogin(c.getLogin()).isEmpty())
-				.map(this::novoUsuario)
-				.forEach(repository::save);
+		contas.forEach(conta -> repository.findByLogin(conta.getLogin()).ifPresentOrElse(
+				usuario -> usuario.atualizarNome(conta.getNome().trim()),
+				() -> repository.save(novoUsuario(conta))));
 		repository.flush();
 		if (repository.count() != 2) {
 			throw new IllegalStateException("O banco deve conter exatamente duas contas.");

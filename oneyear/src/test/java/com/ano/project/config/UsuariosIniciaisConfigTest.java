@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 class UsuariosIniciaisConfigTest {
 
 	@Test
-	void criaExatamenteAsDuasContasSemSobrescreverExistentes() {
+	void criaExatamenteAsDuasContasEAtualizaONomeDasExistentes() {
 		IUsuarioRepository repository = mock(IUsuarioRepository.class);
 		AplicacaoProperties properties = propriedadesValidas();
 		when(repository.count()).thenReturn(0L, 2L);
@@ -29,9 +29,14 @@ class UsuariosIniciaisConfigTest {
 
 		repository = mock(IUsuarioRepository.class);
 		when(repository.count()).thenReturn(2L);
-		when(repository.findByLogin(anyString())).thenReturn(Optional.of(mock(Usuario.class)));
+		Usuario primeiro = mock(Usuario.class);
+		Usuario segundo = mock(Usuario.class);
+		when(repository.findByLogin("um")).thenReturn(Optional.of(primeiro));
+		when(repository.findByLogin("dois")).thenReturn(Optional.of(segundo));
 		new UsuariosIniciaisConfig(repository, properties).run(null);
 		verify(repository, never()).save(any());
+		verify(primeiro).atualizarNome("Nome");
+		verify(segundo).atualizarNome("Nome");
 	}
 
 	@Test

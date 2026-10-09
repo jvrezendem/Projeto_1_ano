@@ -36,7 +36,8 @@ public class UsuarioService implements UserDetailsService {
 
 	public PerfilResponse buscarPerfil(String login) {
 		Usuario usuario = buscarUsuario(login);
-		String avatarUrl = usuario.getAvatarKey() == null ? null : "/api/v1/me/avatar";
+		String avatarUrl = usuario.getAvatarKey() == null ? null
+				: "/api/v1/me/avatar?v=" + Integer.toUnsignedString(usuario.getAvatarKey().hashCode());
 		return new PerfilResponse(usuario.getId(), usuario.getNome(), avatarUrl, usuario.getDescricao(),
 				List.copyOf(usuario.getCaracteristicas()));
 	}

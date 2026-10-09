@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import CalendarDays from "lucide-react/dist/esm/icons/calendar-days";
+import ArrowUpRight from "lucide-react/dist/esm/icons/arrow-up-right";
 import GalleryVerticalEnd from "lucide-react/dist/esm/icons/gallery-vertical-end";
+import Heart from "lucide-react/dist/esm/icons/heart";
 import ImageOff from "lucide-react/dist/esm/icons/image-off";
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import Plus from "lucide-react/dist/esm/icons/plus";
@@ -11,6 +12,7 @@ import Button from "./Button";
 import MemoryDetailDialog from "./MemoryDetailDialog";
 import MemoryMap from "./MemoryMap";
 import PhotoUploadDialog from "./PhotoUploadDialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function lerAnoDaUrl() {
   const valor = new URLSearchParams(location.hash.split("?")[1] || "").get("ano");
@@ -77,8 +79,7 @@ export default function GalleryPage({ onUnauthorized }) {
     }
   };
 
-  const trocarAno = (event) => {
-    const proximoAno = event.target.value;
+  const trocarAno = (proximoAno) => {
     setConsulta({ estado: "carregando", fotos: [], page: 0, hasNext: false, totalElements: 0 });
     setErroProxima("");
     setAno(proximoAno);
@@ -102,11 +103,12 @@ export default function GalleryPage({ onUnauthorized }) {
   };
 
   return (
-    <section className="gallery-page" aria-labelledby="gallery-title">
-      <header className="gallery-header">
+    <section className="gallery-page section-wrap" aria-labelledby="gallery-title">
+      <header className="gallery-header" data-reveal="hero">
         <div>
-          <h1 id="gallery-title">Galeria</h1>
-          <p>Guarde uma nova memória ou reveja as que já fazem parte da história.</p>
+          <span className="eyebrow">GALERIA / LINHA DO TEMPO</span>
+          <h1 id="gallery-title">O tempo passa.<br />A memória <em>fica.</em></h1>
+          <p>Do primeiro registro aos capítulos mais recentes.<br />Uma coleção de dias que merecem ser lembrados.</p>
         </div>
         <Button ref={botaoAdicionarRef} type="button" onClick={() => setCadastroAberto(true)}>
           <Plus size={20} /> Adicionar foto
@@ -115,30 +117,22 @@ export default function GalleryPage({ onUnauthorized }) {
 
       {aviso ? <div className="gallery-notice" role="status">{aviso}</div> : null}
 
-      <section className="gallery-map" aria-labelledby="gallery-map-title">
-        <h2 id="gallery-map-title">Mapa das memórias</h2>
-        <p>Selecione um coração ou use a lista para abrir as memórias localizadas.</p>
-        <MemoryMap onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} refreshKey={refreshKey} />
-      </section>
-
       <section className="gallery-collection" aria-labelledby="photos-title">
-        <div className="gallery-toolbar">
-          <div>
-            <h2 id="photos-title">Fotos</h2>
-            <p>Todas as memórias, das mais antigas para as mais recentes.</p>
-          </div>
-          <label className="year-filter">
-            <span>Filtrar por ano</span>
-            <select value={ano} disabled={carregandoMais} onChange={trocarAno}>
-              <option value="">Todos</option>
-              {anos.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
+        <div className="gallery-toolbar" data-reveal="up">
+          <div><span className="eyebrow">NOSSA COLEÇÃO</span><h2 id="photos-title">Capítulos guardados.</h2></div>
+          <span className="small-note">Mais antigas primeiro</span>
+        </div>
+
+        <div className="gallery-filters" aria-label="Filtrar por ano">
+          <button type="button" className={!ano ? "selected" : ""} aria-pressed={!ano} disabled={carregandoMais} onClick={() => trocarAno("")}>Todas as memórias</button>
+          {anos.map((item) => (
+            <button key={item} type="button" className={ano === String(item) ? "selected" : ""} aria-pressed={ano === String(item)} disabled={carregandoMais} onClick={() => trocarAno(String(item))}>{item}</button>
+          ))}
         </div>
 
         {consulta.estado === "carregando" ? (
           <div className="gallery-loading" aria-label="Carregando galeria" aria-busy="true">
-            {Array.from({ length: 6 }, (_, indice) => <span key={indice} />)}
+            {Array.from({ length: 3 }, (_, indice) => <Skeleton key={indice} />)}
           </div>
         ) : null}
 
@@ -154,7 +148,7 @@ export default function GalleryPage({ onUnauthorized }) {
           <div className="gallery-empty" role="status">
             <GalleryVerticalEnd size={48} aria-hidden="true" />
             <h2>{ano ? `Nenhuma memória encontrada em ${ano}.` : "Suas memórias vão aparecer aqui."}</h2>
-            <p>{ano ? "Escolha outro ano ou volte para Todos." : "Adicione a primeira foto da coleção compartilhada."}</p>
+            <p>{ano ? "Escolha outro ano ou volte para Todas as memórias." : "Adicione a primeira foto da coleção compartilhada."}</p>
           </div>
         ) : null}
 
@@ -164,10 +158,10 @@ export default function GalleryPage({ onUnauthorized }) {
               <section key={grupo.ano} className="photo-group" aria-labelledby={`photo-year-${grupo.ano}`}>
                 <h3 id={`photo-year-${grupo.ano}`}>{grupo.ano === "sem-data" ? "Sem data" : grupo.ano} <span>{grupo.items.length} {grupo.items.length === 1 ? "memória" : "memórias"}</span></h3>
                 <div className="photo-grid" aria-label={grupo.ano === "sem-data" ? "Fotos sem data" : `Fotos de ${grupo.ano}`}>
-                  {grupo.items.map((foto) => {
+                  {grupo.items.map((foto, indice) => {
                     const falhou = imagensFalhas.includes(foto.id);
                     return (
-                      <article className="photo-card" key={foto.id}>
+                      <article className={`photo-card photo-card--${indice % 3}`} key={foto.id} data-reveal="up" style={{ "--reveal-delay": `${(indice % 3) * 80}ms` }}>
                         <button type="button" className="photo-card-button" onClick={(event) => abrirDetalhe([foto.id], 0, event.currentTarget)}>
                           <div className="photo-frame">
                             {falhou ? <div className="photo-fallback"><ImageOff /><span>Imagem indisponível</span></div> : (
@@ -178,10 +172,12 @@ export default function GalleryPage({ onUnauthorized }) {
                                 onError={() => setImagensFalhas((atuais) => atuais.includes(foto.id) ? atuais : [...atuais, foto.id])}
                               />
                             )}
+                            <span className="photo-overlay"><span>{nomeDoLugar(foto)}</span><ArrowUpRight size={20} /></span>
+                            <span className="photo-year">{foto.dataCaptura?.slice(0, 4) || "—"}</span>
                           </div>
                           <div className="photo-card-copy">
+                            <span className="card-meta"><span>{formatarData(foto.dataCaptura)}</span><Heart size={15} /></span>
                             <h4>{foto.legenda || "Memória sem legenda"}</h4>
-                            <p><CalendarDays size={15} /> {formatarData(foto.dataCaptura)}</p>
                             <p><MapPin size={15} /> {nomeDoLugar(foto)}</p>
                           </div>
                         </button>
@@ -201,6 +197,14 @@ export default function GalleryPage({ onUnauthorized }) {
             {erroProxima ? "Tentar carregar novamente" : `Carregar mais (${consulta.fotos.length} de ${consulta.totalElements})`}
           </Button>
         ) : null}
+      </section>
+
+      <section className="gallery-map" aria-labelledby="gallery-map-title">
+        <div className="section-heading" data-reveal="up">
+          <div><span className="eyebrow">ONDE TUDO ACONTECEU</span><h2 id="gallery-map-title">Mapa das <em>memórias.</em></h2></div>
+          <p>Selecione um coração ou use a lista para abrir as memórias localizadas.</p>
+        </div>
+        <div data-reveal="scale"><MemoryMap onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} refreshKey={refreshKey} /></div>
       </section>
 
       {cadastroAberto ? (

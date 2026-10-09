@@ -8,5 +8,5 @@ public record PerfilResponse(
 		String nome,
 		String avatarUrl,
 		String descricao,
-		List<String> caracteristicas) {
+		List<String> gostos) {
 }

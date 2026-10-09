@@ -63,6 +63,24 @@ export function obterPerfil() {
   return requisitar("/api/v1/me");
 }
 
+export function atualizarAvatar(arquivo) {
+  const formulario = new FormData();
+  formulario.append("file", arquivo);
+  return escrever("/api/v1/me/avatar", { method: "POST", body: formulario });
+}
+
+export function obterParceiro() {
+  return requisitar("/api/v1/me/parceiro");
+}
+
+export function atualizarGostosDoParceiro(gostos) {
+  return escrever("/api/v1/me/parceiro/gostos", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gostos }),
+  });
+}
+
 export function obterHistoria() {
   return requisitar("/api/v1/historia");
 }
