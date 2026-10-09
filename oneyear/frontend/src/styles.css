@@ -510,7 +510,7 @@ svg { flex: 0 0 auto; vertical-align: middle; }
 /* Dialogs */
 .memory-dialog, .photo-dialog { padding: 0; border: 1px solid var(--line); color: var(--foreground); background: var(--background); box-shadow: var(--shadow-lg); }
 .memory-dialog::backdrop, .photo-dialog::backdrop { background: rgba(4,9,19,.72); backdrop-filter: blur(4px); }
-.memory-dialog { width: min(1180px, calc(100vw - 64px)); max-width: none; max-height: calc(100dvh - 64px); border-radius: var(--radius-md); }
+.memory-dialog { inset: 0; width: min(1180px, calc(100vw - 64px)); max-width: none; max-height: calc(100dvh - 64px); margin: auto; overflow: auto; border-radius: var(--radius-md); overscroll-behavior: contain; }
 .memory-dialog-inner { position: relative; min-height: 100%; }
 .memory-dialog-header { position: absolute; z-index: 3; top: 20px; right: 20px; left: 20px; display: flex; justify-content: flex-end; pointer-events: none; }
 .memory-dialog-header > div { display: none; }
@@ -522,6 +522,16 @@ svg { flex: 0 0 auto; vertical-align: middle; }
 .memory-detail-copy { display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: clamp(30px, 5vw, 70px); }
 .memory-detail-copy > p { display: flex; align-items: flex-start; gap: 12px; color: var(--muted); line-height: 1.55; }
 .memory-detail-copy .memory-caption { display: block; padding-bottom: 24px; border-bottom: 1px solid var(--line); color: var(--foreground); font-size: clamp(30px, 3.5vw, 52px); font-weight: 450; line-height: 1.08; letter-spacing: -.04em; }
+.memory-delete-zone { margin-top: 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.memory-delete-trigger { display: inline-flex; align-items: center; gap: 8px; padding: 8px 0; color: var(--muted); background: transparent; font-size: 12px; font-weight: 620; }
+.memory-delete-trigger:hover { color: #ef7467; }
+.memory-delete-confirmation { display: grid; gap: 8px; padding: 16px; border: 1px solid rgba(183,62,48,.4); border-radius: var(--radius-md); background: var(--danger-bg); }
+.memory-delete-confirmation > strong { color: var(--foreground); font-size: 15px; }
+.memory-delete-confirmation > p { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.memory-delete-confirmation > div { display: flex; gap: 10px; margin-top: 6px; }
+.memory-delete-confirmation .button { min-height: 42px; flex: 1; }
+.memory-delete-confirm.button { color: #fff; background: var(--red); }
+.memory-delete-confirm.button:hover { color: #fff; background: #cf4b3c; }
 .memory-stepper { position: absolute; right: 14px; bottom: 14px; left: 14px; display: flex; justify-content: space-between; pointer-events: none; }
 .memory-stepper button { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; color: #0e1930; background: rgba(255,255,255,.94); box-shadow: 0 6px 18px rgba(14,25,48,.14); pointer-events: auto; }
 .memory-detail-status { display: grid; min-height: 520px; place-content: center; justify-items: center; gap: 16px; color: var(--muted); text-align: center; }
@@ -710,6 +720,7 @@ svg { flex: 0 0 auto; vertical-align: middle; }
   .memory-detail-media { height: 36dvh; min-height: 220px; max-height: 340px; }
   .memory-detail-copy { padding: 26px; }
   .memory-detail-copy .memory-caption { font-size: 31px; }
+  .memory-delete-confirmation > div { flex-direction: column-reverse; }
   .photo-dialog { width: 100%; }
   .coordinate-fields { grid-template-columns: 1fr; }
 }

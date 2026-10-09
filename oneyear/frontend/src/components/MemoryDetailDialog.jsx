@@ -5,17 +5,22 @@ import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import ImageOff from "lucide-react/dist/esm/icons/image-off";
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import RotateCcw from "lucide-react/dist/esm/icons/rotate-ccw";
+import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import X from "lucide-react/dist/esm/icons/x";
 import * as api from "../api";
 import { formatarData, nomeDoLugar } from "../memory";
 import Button from "./Button";
 
-export default function MemoryDetailDialog({ fotoIds, indiceInicial = 0, opener, onClose, onUnauthorized }) {
+const EXCLUSAO_INICIAL = { confirmando: false, enviando: false, erro: "" };
+
+export default function MemoryDetailDialog({ fotoIds, indiceInicial = 0, opener, onClose, onDeleted, onUnauthorized }) {
   const dialogRef = useRef(null);
+  const confirmacaoRef = useRef(null);
   const [indice, setIndice] = useState(indiceInicial);
   const [consulta, setConsulta] = useState({ estado: "carregando", foto: null });
   const [tentativa, setTentativa] = useState(0);
   const [imagemFalhou, setImagemFalhou] = useState(false);
+  const [exclusao, setExclusao] = useState(EXCLUSAO_INICIAL);
   const idAtual = fotoIds[indice];
 
   useEffect(() => {
@@ -27,6 +32,10 @@ export default function MemoryDetailDialog({ fotoIds, indiceInicial = 0, opener,
       opener?.focus?.();
     };
   }, [onClose, opener]);
+
+  useEffect(() => {
+    if (exclusao.confirmando) confirmacaoRef.current?.focus();
+  }, [exclusao.confirmando]);
 
   useEffect(() => {
     let ativo = true;
@@ -43,12 +52,28 @@ export default function MemoryDetailDialog({ fotoIds, indiceInicial = 0, opener,
   const navegar = (direcao) => {
     setConsulta({ estado: "carregando", foto: null });
     setImagemFalhou(false);
+    setExclusao(EXCLUSAO_INICIAL);
     setIndice((atual) => (atual + direcao + fotoIds.length) % fotoIds.length);
   };
 
   const tentarNovamente = () => {
     setConsulta({ estado: "carregando", foto: null });
     setTentativa((valor) => valor + 1);
+  };
+
+  const excluirMemoria = async () => {
+    setExclusao((atual) => ({ ...atual, enviando: true, erro: "" }));
+    try {
+      await api.excluirFoto(idAtual);
+      if (onDeleted) onDeleted(idAtual);
+      else dialogRef.current?.close();
+    } catch (erro) {
+      if (erro instanceof api.ApiError && erro.status === 401) {
+        onUnauthorized();
+        return;
+      }
+      setExclusao((atual) => ({ ...atual, enviando: false, erro: "Não foi possível apagar esta memória. Tente novamente." }));
+    }
   };
 
   const foto = consulta.foto;
@@ -102,6 +127,42 @@ export default function MemoryDetailDialog({ fotoIds, indiceInicial = 0, opener,
               {foto.legenda ? <p className="memory-caption">{foto.legenda}</p> : null}
               <p><MapPin aria-hidden="true" /> <span>{nomeDoLugar(foto)}</span></p>
               <p><CalendarDays aria-hidden="true" /> <span>{formatarData(foto.dataCaptura)}</span></p>
+              <div className="memory-delete-zone">
+                {exclusao.confirmando ? (
+                  <div className="memory-delete-confirmation" role="alert" aria-live="assertive">
+                    <strong>Apagar esta memória?</strong>
+                    <p>A foto e suas informações serão removidas permanentemente.</p>
+                    {exclusao.erro ? <span className="field-error">{exclusao.erro}</span> : null}
+                    <div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={exclusao.enviando}
+                        onClick={() => setExclusao(EXCLUSAO_INICIAL)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        ref={confirmacaoRef}
+                        type="button"
+                        className="memory-delete-confirm"
+                        loading={exclusao.enviando}
+                        onClick={excluirMemoria}
+                      >
+                        <Trash2 size={17} /> Apagar definitivamente
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="memory-delete-trigger"
+                    type="button"
+                    onClick={() => setExclusao({ confirmando: true, enviando: false, erro: "" })}
+                  >
+                    <Trash2 size={17} /> Apagar memória
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ) : null}

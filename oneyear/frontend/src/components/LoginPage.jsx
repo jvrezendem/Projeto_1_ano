@@ -44,8 +44,8 @@ export default function LoginPage({ tema, onLogin, onToggleTheme, notice }) {
           <ThemeControl tema={tema} onToggle={onToggleTheme} compact />
         </header>
         <div className="login-copy">
-          <h1 id="login-title">Entre para<br /><em>revisitar.</em></h1>
-          <p>Um espaço privado para guardar o que importa.</p>
+          <h1 id="login-title">Nossos melhores<br /><em>momentos.</em></h1>
+          <p>Um espaço para guardar lembranças.</p>
         </div>
 
         <form className="login-form" onSubmit={enviar} noValidate>

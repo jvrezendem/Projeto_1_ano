@@ -102,12 +102,18 @@ export default function GalleryPage({ onUnauthorized }) {
     recarregar();
   };
 
+  const registrarExclusao = useCallback(() => {
+    setSelecao(null);
+    setAviso("Memória apagada com sucesso.");
+    recarregar();
+  }, [recarregar]);
+
   return (
     <section className="gallery-page section-wrap" aria-labelledby="gallery-title">
       <header className="gallery-header" data-reveal="hero">
         <div>
           <span className="eyebrow">GALERIA / LINHA DO TEMPO</span>
-          <h1 id="gallery-title">O tempo passa.<br />A memória <em>fica.</em></h1>
+          <h1 id="gallery-title">O grande.<br />banco de <em>lembranças.</em></h1>
           <p>Do primeiro registro aos capítulos mais recentes.<br />Uma coleção de dias que merecem ser lembrados.</p>
         </div>
         <Button ref={botaoAdicionarRef} type="button" onClick={() => setCadastroAberto(true)}>
@@ -222,6 +228,7 @@ export default function GalleryPage({ onUnauthorized }) {
           indiceInicial={selecao.indice}
           opener={selecao.opener}
           onClose={fecharDetalhe}
+          onDeleted={registrarExclusao}
           onUnauthorized={onUnauthorized}
         />
       ) : null}

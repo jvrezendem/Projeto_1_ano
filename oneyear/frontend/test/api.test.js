@@ -6,6 +6,7 @@ import {
   atualizarGostosDoParceiro,
   cadastrarFoto,
   entrar,
+  excluirFoto,
   listarAnos,
   listarFotos,
   listarTodosPins,
@@ -111,13 +112,14 @@ test("obterHistoria consulta o conteúdo privado sem usar cache", async () => {
   assert.equal(chamadas[0].opcoes.credentials, "include");
 });
 
-test("lista, envia o arquivo original e atualiza os metadados da foto", async () => {
+test("lista, envia, atualiza e exclui uma foto", async () => {
   const chamadas = [];
   global.fetch = async (url, opcoes) => {
     chamadas.push({ url, opcoes });
     if (url === "/api/v1/auth/csrf") return response(200, { token: "fotos", headerName: "X-CSRF-TOKEN" });
     if (url.startsWith("/api/v1/fotos?") && !opcoes.method) return response(200, { items: [], totalElements: 0 });
     if (opcoes.method === "POST") return response(201, { id: "foto-1", avisos: [] });
+    if (opcoes.method === "DELETE") return response(204, null);
     return response(200, { id: "foto-1", legenda: "Memória" });
   };
 
@@ -125,16 +127,19 @@ test("lista, envia o arquivo original e atualiza os metadados da foto", async ()
   const arquivo = new File([new Uint8Array([1, 2, 3])], "foto.png", { type: "image/png" });
   await cadastrarFoto(arquivo);
   await atualizarFoto("foto-1", { legenda: "Memória", latitude: null, longitude: null });
+  await excluirFoto("foto-1");
 
   assert.equal(chamadas[0].url, "/api/v1/fotos?page=0&size=24");
   const envio = chamadas.find((chamada) => chamada.url === "/api/v1/fotos" && chamada.opcoes.method === "POST");
-  const atualizacao = chamadas.find((chamada) => chamada.url === "/api/v1/fotos/foto-1");
+  const atualizacao = chamadas.find((chamada) => chamada.url === "/api/v1/fotos/foto-1" && chamada.opcoes.method === "PATCH");
+  const exclusao = chamadas.find((chamada) => chamada.url === "/api/v1/fotos/foto-1" && chamada.opcoes.method === "DELETE");
   assert.ok(envio.opcoes.body instanceof FormData);
   assert.equal(envio.opcoes.body.get("file").name, "foto.png");
   assert.equal(envio.opcoes.headers["Content-Type"], undefined);
   assert.ok(envio.opcoes.headers["X-CSRF-TOKEN"]);
   assert.equal(atualizacao.opcoes.method, "PATCH");
   assert.deepEqual(JSON.parse(atualizacao.opcoes.body), { legenda: "Memória", latitude: null, longitude: null });
+  assert.ok(exclusao.opcoes.headers["X-CSRF-TOKEN"]);
 });
 
 test("aplica o filtro de ano no backend e consulta anos e detalhe", async () => {

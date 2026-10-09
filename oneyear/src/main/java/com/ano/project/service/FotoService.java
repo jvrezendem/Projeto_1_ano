@@ -110,6 +110,20 @@ public class FotoService {
 		return resposta(repository.saveAndFlush(foto), List.of());
 	}
 
+	public void excluir(UUID id) {
+		String chave = transacao.execute(status -> {
+			Foto foto = buscarEntidade(id);
+			repository.delete(foto);
+			repository.flush();
+			return foto.getStorageKey();
+		});
+		try {
+			armazenamentoService.remover(chave);
+		} catch (RuntimeException erro) {
+			log.error("Memória removida do banco, mas o arquivo será limpo pela reconciliação: chave={}", chave, erro);
+		}
+	}
+
 	private Foto montarFoto(Usuario autor, String chave, ImagemService.ImagemValidada imagem,
 			MetadadosService.Metadados metadados) {
 		Foto foto = new Foto();

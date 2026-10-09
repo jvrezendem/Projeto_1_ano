@@ -129,6 +129,10 @@ export function atualizarFoto(id, dados) {
   });
 }
 
+export function excluirFoto(id) {
+  return escrever(`/api/v1/fotos/${id}`, { method: "DELETE" });
+}
+
 export async function sair() {
   try {
     await escrever("/api/v1/auth/logout", { method: "POST" });

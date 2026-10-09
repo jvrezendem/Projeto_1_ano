@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -262,6 +264,14 @@ class ApiIntegrationTest {
 				.andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(1));
 		mvc.perform(get("/api/v1/fotos/anos").with(user(login)))
 				.andExpect(status().isOk()).andExpect(content().json("[2025]"));
+
+		String chave = foto.getStorageKey();
+		mvc.perform(delete("/api/v1/fotos/{id}", id).with(user(login)).with(csrf()))
+				.andExpect(status().isNoContent());
+		org.junit.jupiter.api.Assertions.assertFalse(fotos.existsById(id));
+		verify(armazenamento).remover(chave);
+		mvc.perform(get("/api/v1/fotos/{id}", id).with(user(login)))
+				.andExpect(status().isNotFound());
 	}
 
 	@Test

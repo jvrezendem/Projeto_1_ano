@@ -143,7 +143,7 @@ export default function ProfilePage({ perfil, onGallery, onProfileUpdated }) {
 
         <div className="profile-copy" data-reveal="right">
           <h1 id="profile-title">Oi, eu sou<br /><em>{nome}.</em></h1>
-          <p className="profile-lead">{descricao || "Feita de caminhos, encontros e histórias para contar."}</p>
+          <p className="profile-lead">{descricao || ""}</p>
           {erroAvatar ? <p className="profile-feedback profile-feedback--error" role="alert">{erroAvatar}</p> : null}
 
           <section className="profile-likes" aria-labelledby="profile-likes-title">
@@ -156,8 +156,6 @@ export default function ProfilePage({ perfil, onGallery, onProfileUpdated }) {
             ) : <p className="profile-empty">A outra pessoa ainda não escreveu seus detalhes favoritos.</p>}
           </section>
 
-          <h2>Um pouco sobre mim</h2>
-          <p>{descricao || "Nenhuma descrição informada."}</p>
           <Button type="button" onClick={onGallery}>Ver minhas memórias <ArrowRight size={17} /></Button>
         </div>
       </div>

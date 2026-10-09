@@ -56,6 +56,20 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
   const [estado, setEstado] = useState({ dados: null, carregando: true, erro: "" });
   const [imagensFalhas, setImagensFalhas] = useState([]);
   const [selecao, setSelecao] = useState(null);
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
+  const abrirDetalhe = useCallback((fotoIds, indice, opener) => setSelecao({ fotoIds, indice, opener }), []);
+  const fecharDetalhe = useCallback(() => setSelecao(null), []);
+  const registrarExclusao = useCallback((fotoId) => {
+    setSelecao(null);
+    setEstado((atual) => ({
+      ...atual,
+      dados: atual.dados ? {
+        ...atual.dados,
+        secoes: (atual.dados.secoes || []).map((secao) => secao.fotoId === fotoId ? { ...secao, fotoId: null } : secao),
+      } : atual.dados,
+    }));
+    setMapRefreshKey((valor) => valor + 1);
+  }, []);
 
   const carregar = useCallback(async () => {
     setEstado((anterior) => ({ ...anterior, carregando: !anterior.dados, erro: "" }));
@@ -90,8 +104,6 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
 
   const { frasePrincipal, introducao, secoes = [], dicas = [] } = estado.dados;
   const historiaVazia = !frasePrincipal?.trim() && !introducao?.trim() && secoes.length === 0;
-  const abrirDetalhe = (fotoIds, indice, opener) => setSelecao({ fotoIds, indice, opener });
-  const fecharDetalhe = () => setSelecao(null);
 
   const renderFotoDeAsset = (tipo, className, alt) => {
     const asset = fotosDeAssets[tipo];
@@ -125,9 +137,9 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
 
       <header className="story-hero section-wrap" data-reveal="hero">
         <div className="story-hero-copy">
-          <span className="eyebrow">UM ANO DE NÓS. TANTOS CAMINHOS.</span>
-          <h1><TituloDestacado>{frasePrincipal?.trim() || "Tem lugares que ficam na gente."}</TituloDestacado></h1>
-          <p>{introducao?.trim() || "Um pequeno universo feito das nossas memórias."}</p>
+          <span className="eyebrow">365 DIAS. CONTANDO...</span>
+          <h1><TituloDestacado>{frasePrincipal?.trim() || "De todos os lugares, o meu favorito é com você."}</TituloDestacado></h1>
+          <p>{introducao?.trim() || "Bom, e já se passaram um ano, um ano em que tomamos uma decisão que mudaria nossas vidas. Quero agradecer por cada momento ao seu lado, cada momento em que eu precisava de alguém e você estava lá, cada sorriso, cada abraço, cada olhar, cada gesto de amor e carinho. Por isso decide por guardar todos esses momentos. Te amo muito!!! "}<br /> {"PS: Dá pra atualizar essa frase depois"}</p>
           <Button type="button" onClick={() => document.getElementById("nossa-historia")?.scrollIntoView({ behavior: "smooth" })}>
             Explorar nossas memórias <ArrowDown size={17} />
           </Button>
@@ -148,20 +160,20 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
       <section className="story-intro section-wrap" aria-labelledby="story-intro-title">
         <div data-reveal="left">
           <span className="eyebrow">O QUE NOS TROUXE ATÉ AQUI</span>
-          <h2 id="story-intro-title">De todos os lugares,<br />o meu favorito<br />é <em>com você.</em></h2>
+          <h2 id="story-intro-title">Esse é mais do que<br />um presente.<br /><em>é a nossa história.</em></h2>
         </div>
         <div className="story-intro-copy" data-reveal="right">
           <Heart size={54} strokeWidth={1} aria-hidden="true" />
-          <p>{introducao?.trim() || "Tem dias que a gente gostaria de guardar inteiros."}</p>
+          <p>{introducao?.trim() || "Tem dias que nunca devem ser esquecidos."}</p>
           <button className="text-link" type="button" onClick={onGallery}>Percorrer todas as memórias <ArrowUpRight size={17} /></button>
         </div>
       </section>
 
       <section className="timeline section-wrap" id="nossa-historia" aria-labelledby="timeline-title">
         <div className="timeline-heading" data-reveal="up">
-          <span className="eyebrow">CAPÍTULOS QUE FICAM</span>
-          <h2 id="timeline-title">A gente se encontra<br />nos <em>detalhes.</em></h2>
-          <p>Um lugar, um instante, um jeito de lembrar.<br />Percorra os capítulos da nossa história.</p>
+          <span className="eyebrow"></span>
+          <h2 id="timeline-title">O porquê <em>disso?</em></h2>
+          <p>Dessa vez, pra comemorar um marco tão importante, eu quis me esforçar um pouco mais.<br />Crie um presente que vamos construir juntos!</p>
         </div>
 
         {secoes.length ? (
@@ -214,7 +226,7 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
       <section className="story-guide section-wrap" aria-labelledby="guide-title">
         <div className="guide-heading" data-reveal="up">
           <span className="eyebrow">PARA EXPLORAR SEM PRESSA</span>
-          <h2 id="guide-title">Voltar é <em>simples.</em></h2>
+          <h2 id="guide-title">Usar é <em>simples.</em></h2>
         </div>
         <div className="guide-grid">
           {orientacoesPadrao.map(({ titulo, texto, Icon }, indice) => (
@@ -230,10 +242,10 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
 
       <section className="memory-map section-wrap" aria-labelledby="map-title">
         <div className="section-heading" data-reveal="up">
-          <div><span className="eyebrow">NOSSO MAPA</span><h2 id="map-title">O mundo é grande.<br />O afeto <em>aproxima.</em></h2></div>
-          <p>Há uma história em cada coração. Selecione um lugar para voltar àquele momento.</p>
+          <div><span className="eyebrow">NOSSO MAPA</span><h2 id="map-title">O mundo é muito grande.<br />Mas, a gente <em>conquista juntos.</em></h2></div>
+          <p>Cada um desses pontos é uma lembrança. Selecione um lugar para voltar àquele momento.</p>
         </div>
-        <div data-reveal="scale"><MemoryMap compact onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} onGallery={onGallery} /></div>
+        <div data-reveal="scale"><MemoryMap compact onSelect={abrirDetalhe} onUnauthorized={onUnauthorized} onGallery={onGallery} refreshKey={mapRefreshKey} /></div>
       </section>
 
       <section className="story-closing section-wrap" data-reveal="up">
@@ -249,6 +261,7 @@ export default function HistoriaPage({ onGallery, onUnauthorized }) {
           indiceInicial={selecao.indice}
           opener={selecao.opener}
           onClose={fecharDetalhe}
+          onDeleted={registrarExclusao}
           onUnauthorized={onUnauthorized}
         />
       ) : null}
